@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280">
+  <title>WorkAI — 홈</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ══════════════════════════════════════════
+       SIDEBAR
+  ═══════════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+
+    <!-- Header: Logo + Toggle -->
+    <div class="sidebar__header">
+      <a class="sidebar__logo" href="index.html">
+        <div class="sidebar__logo-icon">W</div>
+        <span class="sidebar__logo-text">WorkAI</span>
+      </a>
+      <button class="sidebar__toggle" id="sidebarToggle" title="메뉴 접기">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- GNB Nav -->
+    <nav class="sidebar__nav">
+      <ul class="nav-list">
+
+        <li class="nav-item nav-item--active">
+          <a href="index.html" class="nav-link">
+            <span class="nav-link__icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+              </svg>
+            </span>
+            <span class="nav-link__label">홈</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a href="chat.html" class="nav-link">
+            <span class="nav-link__icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              </svg>
+            </span>
+            <span class="nav-link__label">대화</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a href="agent.html" class="nav-link">
+            <span class="nav-link__icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                <path d="M8 21h8M12 17v4"/>
+                <circle cx="8.5" cy="10" r="1.5"/>
+                <circle cx="15.5" cy="10" r="1.5"/>
+                <path d="M9.5 13.5s1 1 2.5 1 2.5-1 2.5-1"/>
+              </svg>
+            </span>
+            <span class="nav-link__label">에이전트</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a href="drive.html" class="nav-link">
+            <span class="nav-link__icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+              </svg>
+            </span>
+            <span class="nav-link__label">드라이브</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a href="#" class="nav-link" data-wip>
+            <span class="nav-link__icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+              </svg>
+            </span>
+            <span class="nav-link__label">알림</span>
+            <span class="nav-link__badge">3</span>
+          </a>
+        </li>
+
+      </ul>
+    </nav>
+
+    <!-- SNB (Bottom) -->
+    <div class="sidebar__snb">
+
+      <!-- 즐겨찾기 — 고정 항목 있을 때만 표시 -->
+      <div class="snb-section" id="favorites-section" style="display:none">
+        <div class="snb-section__header">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          <span class="snb-section__header-text">즐겨찾기</span>
+        </div>
+        <ul class="recent-list" id="favorites-list"></ul>
+      </div>
+
+      <!-- 최근 항목 -->
+      <div class="snb-section">
+        <div class="snb-section__header">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span class="snb-section__header-text">최근 항목</span>
+        </div>
+        <ul class="recent-list">
+          <li>
+            <a class="recent-item" href="#">
+              <svg class="recent-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              </svg>
+              <span class="recent-item__label">2024년 4분기 매출 분석</span>
+            </a>
+          </li>
+          <li>
+            <a class="recent-item" href="#">
+              <svg class="recent-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              </svg>
+              <span class="recent-item__label">신규 입사자 온보딩 절차</span>
+            </a>
+          </li>
+          <li>
+            <a class="recent-item" href="#">
+              <svg class="recent-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                <path d="M8 21h8M12 17v4"/>
+              </svg>
+              <span class="recent-item__label">주간 보고서 요약 에이전트</span>
+            </a>
+          </li>
+          <li>
+            <a class="recent-item" href="#">
+              <svg class="recent-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              </svg>
+              <span class="recent-item__label">인사 규정 v2 변경사항 요약</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+    </div><!-- /snb -->
+
+    <!-- User + Settings -->
+    <div class="sidebar__user">
+      <div class="user-profile">
+        <div class="user-avatar">홍</div>
+        <div class="user-info">
+          <span class="user-name">홍길동</span>
+          <span class="user-role">일반 사용자</span>
+        </div>
+      </div>
+      <button class="user-settings-btn" title="설정" onclick="location.href='settings.html'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </button>
+    </div>
+
+  </aside>
+  <!-- /SIDEBAR -->
+
+
+  <!-- ══════════════════════════════════════════
+       MAIN
+  ═══════════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <div class="main__topbar">
+      <div class="topbar__left">
+        <span class="topbar__title">홈</span>
+      </div>
+      <div class="topbar__right">
+
+        <!-- Notification bell -->
+        <button class="topbar__icon-btn" title="알림" onclick="location.href='notification.html'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+          </svg>
+          <span class="topbar__badge"></span>
+        </button>
+
+        <!-- Demo state switcher (prototype only) -->
+        <div class="demo-switcher" style="margin-left:8px">
+          <button class="demo-btn demo-btn--active" data-state="empty"   onclick="setState('empty')">빈 상태</button>
+          <button class="demo-btn"                  data-state="loading" onclick="setState('loading')">로딩 중</button>
+          <button class="demo-btn"                  data-state="answer"  onclick="setState('answer')">답변 생성</button>
+        </div>
+
+        <!-- New chat -->
+        <button class="new-chat-btn" onclick="setState('empty')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          새 대화
+        </button>
+
+      </div>
+    </div><!-- /topbar -->
+
+
+    <!-- Body -->
+    <div class="main__body">
+
+      <!-- ─────────────────────────────────────
+           STATE: EMPTY
+      ──────────────────────────────────────── -->
+      <div class="state-empty" id="state-empty">
+
+        <div class="state-empty__greeting">
+          <h1>안녕하세요, 홍길동님 👋</h1>
+          <p>오늘은 무엇을 도와드릴까요?</p>
+        </div>
+
+        <div class="suggestion-grid">
+
+          <button class="suggestion-card" onclick="submitSuggestion('2024년 4분기 매출 현황을 분석하고 주요 인사이트를 정리해줘')">
+            <span class="suggestion-card__emoji">📊</span>
+            <span class="suggestion-card__title">매출 현황 분석</span>
+            <span class="suggestion-card__desc">4분기 보고서를 기반으로 핵심 지표를 요약해드려요</span>
+          </button>
+
+          <button class="suggestion-card" onclick="submitSuggestion('신규 입사자 온보딩 절차와 필요한 서류를 알려줘')">
+            <span class="suggestion-card__emoji">🧑‍💼</span>
+            <span class="suggestion-card__title">온보딩 절차 안내</span>
+            <span class="suggestion-card__desc">입사자에게 필요한 서류와 단계를 정리해드려요</span>
+          </button>
+
+          <button class="suggestion-card" onclick="submitSuggestion('이번 주 팀 회의 안건 초안을 작성해줘')">
+            <span class="suggestion-card__emoji">📝</span>
+            <span class="suggestion-card__title">회의 안건 초안 작성</span>
+            <span class="suggestion-card__desc">팀 미팅 아젠다를 빠르게 구성해드려요</span>
+          </button>
+
+          <button class="suggestion-card" onclick="submitSuggestion('인사 규정 최신 버전에서 변경된 내용을 요약해줘')">
+            <span class="suggestion-card__emoji">📋</span>
+            <span class="suggestion-card__title">인사 규정 변경사항</span>
+            <span class="suggestion-card__desc">최신 규정에서 업데이트된 핵심 내용만 정리해요</span>
+          </button>
+
+        </div>
+
+      </div><!-- /state-empty -->
+
+
+      <!-- ─────────────────────────────────────
+           STATE: CHAT (loading + answer)
+      ──────────────────────────────────────── -->
+      <div class="state-chat" id="state-chat" style="display:none">
+
+        <!-- Thread -->
+        <div class="chat-thread-wrapper">
+          <div class="chat-thread" id="chat-thread">
+
+            <!-- User message -->
+            <div class="message message--user">
+              <div class="message__bubble">
+                <div class="message__content" id="msg-user">
+                  2024년 4분기 매출 현황을 분석하고 주요 인사이트를 정리해줘
+                </div>
+                <span class="message__meta">오후 2:34</span>
+              </div>
+            </div>
+
+            <!-- AI: Loading -->
+            <div class="message message--ai" id="msg-loading" style="display:none">
+              <div class="message__avatar">W</div>
+              <div class="message__bubble">
+                <div class="message__content">
+                  <div class="typing-indicator">
+                    <span></span><span></span><span></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- AI: Answer -->
+            <div class="message message--ai" id="msg-answer" style="display:none">
+              <div class="message__avatar">W</div>
+              <div class="message__bubble">
+                <div class="message__content">
+                  <p><strong>2024년 4분기 매출 현황 분석 결과</strong>입니다.</p>
+
+                  <p>4분기 전체 매출은 <strong>142억 원</strong>으로, 전년 동기 대비 <strong>+18.3%</strong> 성장했습니다. 주요 인사이트는 다음과 같습니다.</p>
+
+                  <ul>
+                    <li><strong>엔터프라이즈 부문</strong> 성장이 두드러짐 (+34%). B2B 신규 계약 7건 체결</li>
+                    <li><strong>12월 매출</strong>이 분기 최고치(52억 원) 기록 — 연말 대형 프로젝트 납품 효과</li>
+                    <li><strong>마케팅 비용 효율</strong>은 전분기 대비 12% 개선. ROI 2.8배 달성</li>
+                    <li><strong>SMB 부문</strong>은 소폭 감소(-4%) — 경기 둔화 영향으로 해석됨</li>
+                  </ul>
+
+                  <p>전반적으로 목표 대비 <strong>107%</strong> 달성하며 안정적인 성장세를 보였습니다.</p>
+
+                  <div class="message__sources">
+                    <span class="sources__label">참고 문서</span>
+                    <div class="sources__list">
+                      <button class="source-chip" onclick="openDocViewer()">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        2024_Q4_매출보고서.pdf
+                      </button>
+                      <button class="source-chip">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        영업팀_KPI_현황.xlsx
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <span class="message__meta">오후 2:34</span>
+              </div>
+            </div>
+
+          </div><!-- /chat-thread -->
+        </div><!-- /chat-thread-wrapper -->
+
+
+        <!-- ─────────────────────────────────
+             DOCUMENT VIEWER PANEL
+        ──────────────────────────────────── -->
+        <div class="doc-viewer" id="doc-viewer">
+
+          <div class="doc-viewer__header">
+            <span class="doc-viewer__filename-icon">📄</span>
+            <span class="doc-viewer__filename">2024_Q4_매출보고서.pdf</span>
+            <div class="doc-viewer__header-actions">
+              <span class="doc-viewer__page-nav">p. 4 / 18</span>
+              <button class="doc-viewer__close-btn" onclick="closeDocViewer()" title="닫기">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="doc-viewer__body">
+            <!-- Simulated PDF page -->
+            <div class="doc-page">
+              <div class="doc-page__title">2024년 4분기 매출 보고서</div>
+              <div class="doc-page__subtitle">작성: 재무전략팀 · 2025.01.10 · 대외비</div>
+
+              <div class="doc-page__section">
+                <div class="doc-page__section-title">1. 분기 매출 요약</div>
+                <p class="doc-page__text">
+                  2024년 4분기(10월~12월) 연결 기준 총 매출은 <span class="doc-page__highlight">142억 원</span>으로 확정되었습니다.
+                  이는 전년 동기(120억 원) 대비 <span class="doc-page__highlight">18.3% 증가</span>한 수치이며,
+                  내부 목표치(133억 원)를 <span class="doc-page__highlight">107% 초과 달성</span>하였습니다.
+                </p>
+              </div>
+
+              <div class="doc-page__section">
+                <div class="doc-page__section-title">2. 부문별 실적</div>
+                <table class="doc-page__table">
+                  <thead>
+                    <tr>
+                      <th>부문</th>
+                      <th>Q4 매출</th>
+                      <th>전년비</th>
+                      <th>목표 달성률</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="highlight-row">
+                      <td>엔터프라이즈</td>
+                      <td>68억 원</td>
+                      <td>+34.0%</td>
+                      <td>112%</td>
+                    </tr>
+                    <tr>
+                      <td>중견기업(MM)</td>
+                      <td>41억 원</td>
+                      <td>+12.5%</td>
+                      <td>102%</td>
+                    </tr>
+                    <tr>
+                      <td>SMB</td>
+                      <td>33억 원</td>
+                      <td>-4.0%</td>
+                      <td>94%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="doc-page__section">
+                <div class="doc-page__section-title">3. 월별 추이</div>
+                <p class="doc-page__text">
+                  10월 43억 원 → 11월 47억 원 → <span class="doc-page__highlight">12월 52억 원</span>으로
+                  분기 말 대형 납품 계약 완료에 따라 최고치를 기록하였습니다.
+                  12월 단일 거래 최대 건은 K사와의 AI 솔루션 도입 계약(12억 원)이며, 내년도 확장 계약 협의 중입니다.
+                </p>
+              </div>
+
+              <div class="doc-page__section">
+                <div class="doc-page__section-title">4. 비용 및 수익성</div>
+                <p class="doc-page__text">
+                  마케팅 투자 대비 수익(ROI)은 2.8배로 전분기(2.5배) 대비 개선되었습니다.
+                  판관비율은 34.2%로 목표(35%) 이내 통제되었으며, 영업이익률은 <span class="doc-page__highlight">22.8%</span>를 기록하였습니다.
+                </p>
+              </div>
+            </div><!-- /doc-page -->
+          </div><!-- /doc-viewer__body -->
+
+        </div><!-- /doc-viewer -->
+
+      </div><!-- /state-chat -->
+
+    </div><!-- /main__body -->
+
+
+    <!-- ──────────────────────────────────────
+         CHAT INPUT (항상 표시)
+    ─────────────────────────────────────── -->
+    <div class="main__input">
+      <div class="chat-input">
+
+        <textarea
+          class="chat-input__textarea"
+          id="chatTextarea"
+          placeholder="무엇이든 물어보세요... (Enter로 전송, Shift+Enter 줄바꿈)"
+          rows="1"
+        ></textarea>
+
+        <div class="chat-input__bottom">
+          <div class="chat-input__left">
+
+            <button class="model-selector" id="modelSelectorBtn" onclick="toggleModelDropdown()">
+              <span class="model-selector__dot"></span>
+              <span id="modelLabel">Claude 3.5 Sonnet</span>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+
+            <button class="attach-btn" title="파일 첨부">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+              </svg>
+            </button>
+
+          </div>
+          <div class="chat-input__right">
+            <span class="input-hint">Enter로 전송</span>
+            <button class="send-btn" id="sendBtn" disabled onclick="sendMessage()" title="전송">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="19" x2="12" y2="5"/>
+                <polyline points="5 12 12 5 19 12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /main__input -->
+
+  </main>
+  <!-- /MAIN -->
+
+</div><!-- /app -->
+
+<script src="js/common.js"></script>
+</body>
+</html>

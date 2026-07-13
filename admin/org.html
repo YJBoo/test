@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280">
+  <title>WorkAI 관리자 — 조직</title>
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    /* ── Admin Sidebar ─────────────────────────────────── */
+    .admin-sidebar {
+      width: var(--sidebar-width);
+      min-width: var(--sidebar-width);
+      background: var(--color-surface);
+      border-right: 1px solid var(--color-border);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      flex-shrink: 0;
+    }
+    .admin-sidebar__header {
+      padding: var(--space-md) var(--space-md) var(--space-md);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      border-bottom: 1px solid var(--color-border);
+      height: 56px;
+      box-sizing: border-box;
+    }
+    .admin-logo {
+      width: 28px; height: 28px;
+      background: var(--color-primary);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 13px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .admin-sidebar__title {
+      font-size: 13.5px; font-weight: 600;
+      color: var(--color-text-primary);
+      flex: 1; min-width: 0;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .admin-badge {
+      font-size: 10px; font-weight: 600;
+      background: #FEF3C7; color: #D97706;
+      padding: 2px 6px; border-radius: 10px;
+      flex-shrink: 0;
+    }
+    .admin-nav {
+      flex: 1;
+      padding: var(--space-sm);
+      overflow-y: auto;
+    }
+    .admin-nav__list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 2px; }
+    .admin-nav__link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px var(--space-sm);
+      border-radius: var(--radius-sm);
+      color: var(--color-text-secondary);
+      text-decoration: none; font-size: 13.5px;
+      transition: background 0.15s, color 0.15s;
+      cursor: pointer;
+    }
+    .admin-nav__link:hover { background: var(--color-bg); color: var(--color-text-primary); }
+    .admin-nav__link--active { background: #EEF0FE; color: var(--color-primary); font-weight: 500; }
+    .admin-sidebar__footer {
+      padding: var(--space-sm) var(--space-md);
+      border-top: 1px solid var(--color-border);
+    }
+    .admin-back-link {
+      display: flex; align-items: center; gap: var(--space-sm);
+      font-size: 13px; color: var(--color-text-secondary);
+      text-decoration: none;
+      padding: 8px var(--space-sm);
+      border-radius: var(--radius-sm);
+      transition: background 0.15s;
+    }
+    .admin-back-link:hover { background: var(--color-bg); color: var(--color-text-primary); }
+
+    /* ── Admin Main ─────────────────────────────────────── */
+    .admin-main {
+      flex: 1; display: flex; flex-direction: column;
+      overflow: hidden; background: var(--color-bg);
+      min-width: 0;
+    }
+    .admin-topbar {
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border);
+      padding: 0 var(--space-xl);
+      display: flex; align-items: center;
+      height: 56px; flex-shrink: 0; gap: var(--space-lg);
+    }
+    .admin-topbar__title { font-size: 15px; font-weight: 600; color: var(--color-text-primary); flex-shrink: 0; }
+    .admin-tabs { display: flex; height: 100%; }
+    .admin-tab {
+      padding: 0 var(--space-md); height: 100%;
+      display: flex; align-items: center;
+      font-size: 14px; color: var(--color-text-secondary);
+      border-bottom: 2px solid transparent;
+      cursor: pointer; transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+    .admin-tab:hover { color: var(--color-text-primary); }
+    .admin-tab--active { color: var(--color-primary); border-bottom-color: var(--color-primary); font-weight: 500; }
+
+    /* ── Org Tree Layout ────────────────────────────────── */
+    .org-layout { display: flex; flex: 1; overflow: hidden; }
+    .org-tree-panel {
+      width: 280px; min-width: 280px;
+      background: var(--color-surface);
+      border-right: 1px solid var(--color-border);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .org-tree-search {
+      padding: var(--space-md);
+      border-bottom: 1px solid var(--color-border);
+      flex-shrink: 0;
+    }
+    .org-tree-search__input {
+      width: 100%; box-sizing: border-box;
+      padding: 8px 12px 8px 34px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      font-size: 13px; color: var(--color-text-primary);
+      background: var(--color-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 10px center;
+      outline: none;
+    }
+    .org-tree-search__input:focus { border-color: var(--color-primary); background-color: var(--color-surface); }
+    .org-tree-body { flex: 1; overflow-y: auto; padding: var(--space-xs) 0; }
+
+    /* ── Tree Node ──────────────────────────────────────── */
+    .tree-node { position: relative; }
+    .tree-node__row {
+      display: flex; align-items: center;
+      padding: 6px var(--space-xs);
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      margin: 1px 4px;
+      gap: 2px; position: relative;
+    }
+    .tree-node__row:hover { background: var(--color-bg); }
+    .tree-node__row:hover .tree-node__actions { display: flex; }
+    .tree-node__row--active { background: #EEF0FE; }
+    .tree-node__row--active .tree-node__name { color: var(--color-primary); font-weight: 500; }
+    .tree-node__row--active .tree-node__icon { color: var(--color-primary); }
+
+    .tree-node__toggle {
+      width: 18px; height: 18px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 3px; color: var(--color-text-secondary);
+      font-size: 10px;
+    }
+    .tree-node__toggle:hover { background: var(--color-border); }
+    .tree-node__toggle--leaf { pointer-events: none; opacity: 0; }
+
+    .tree-node__icon {
+      width: 16px; height: 16px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--color-text-secondary);
+    }
+    .tree-node__info { flex: 1; min-width: 0; }
+    .tree-node__name {
+      font-size: 13.5px; color: var(--color-text-primary);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .tree-node__meta {
+      font-size: 11px; color: var(--color-text-secondary);
+      display: flex; align-items: center; gap: 4px;
+    }
+    .tree-limit-badge {
+      font-size: 10px; background: #FEF3C7; color: #D97706;
+      padding: 1px 5px; border-radius: 8px;
+    }
+    .tree-node__actions { display: none; align-items: center; gap: 2px; flex-shrink: 0; }
+    .tree-action-btn {
+      width: 22px; height: 22px; border: none; background: none;
+      cursor: pointer; border-radius: 3px;
+      color: var(--color-text-secondary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 600; padding: 0; line-height: 1;
+    }
+    .tree-action-btn:hover { background: var(--color-border); color: var(--color-text-primary); }
+    .tree-node__children--collapsed { display: none; }
+
+    /* ── Tree Dropdown ──────────────────────────────────── */
+    .tree-dropdown {
+      position: fixed;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      z-index: 1000; min-width: 150px;
+      padding: var(--space-xs) 0;
+    }
+    .tree-dropdown__item {
+      padding: 8px var(--space-md);
+      font-size: 13.5px; color: var(--color-text-primary);
+      cursor: pointer; display: flex; align-items: center; gap: var(--space-sm);
+    }
+    .tree-dropdown__item:hover { background: var(--color-bg); }
+    .tree-dropdown__item--danger { color: #DC2626; }
+    .tree-dropdown__item--danger:hover { background: #FFF5F5; }
+
+    /* ── Detail Panel ───────────────────────────────────── */
+    .org-detail-panel { flex: 1; overflow-y: auto; padding: var(--space-xl); }
+    .detail-empty {
+      height: 100%; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: var(--space-md);
+    }
+    .detail-breadcrumb {
+      font-size: 12px; color: var(--color-text-secondary);
+      display: flex; align-items: center; flex-wrap: wrap;
+      gap: 2px; margin-bottom: var(--space-md);
+    }
+    .detail-breadcrumb__link { cursor: pointer; }
+    .detail-breadcrumb__link:hover { color: var(--color-primary); text-decoration: underline; }
+    .detail-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: var(--space-xl);
+    }
+    .detail-dept-name { font-size: 22px; font-weight: 700; color: var(--color-text-primary); }
+    .detail-delete-btn {
+      padding: 7px 14px;
+      border: 1px solid #FCA5A5; background: #FFF5F5; color: #DC2626;
+      border-radius: var(--radius-sm); font-size: 13px; cursor: pointer;
+    }
+    .detail-delete-btn:hover { background: #FEE2E2; }
+
+    .detail-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-lg); margin-bottom: var(--space-md);
+    }
+    .detail-card__title {
+      font-size: 11px; font-weight: 600;
+      color: var(--color-text-secondary);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: var(--space-md);
+    }
+
+    /* Summary */
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+    .summary-item { background: var(--color-bg); border-radius: var(--radius-sm); padding: var(--space-md); }
+    .summary-item__label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: var(--space-xs); }
+    .summary-item__value { font-size: 26px; font-weight: 700; color: var(--color-text-primary); display: flex; align-items: baseline; gap: 4px; }
+    .summary-item__unit { font-size: 14px; font-weight: 400; color: var(--color-text-secondary); }
+    .summary-item__action { margin-top: var(--space-xs); }
+    .btn-text-link { background: none; border: none; color: var(--color-primary); font-size: 12px; cursor: pointer; padding: 0; text-decoration: underline; }
+
+    /* Basic info */
+    .info-field { display: flex; align-items: center; gap: var(--space-sm); }
+    .info-input {
+      flex: 1; padding: 9px 12px;
+      border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+      font-size: 14px; color: var(--color-text-primary); outline: none; background: var(--color-surface);
+    }
+    .info-input:focus { border-color: var(--color-primary); }
+    .info-input--readonly { background: var(--color-bg); color: var(--color-text-secondary); cursor: default; }
+    .info-link { font-size: 13px; color: var(--color-primary); text-decoration: underline; cursor: pointer; white-space: nowrap; }
+    .btn-save {
+      padding: 9px 16px; background: var(--color-primary); color: #fff;
+      border: none; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; white-space: nowrap;
+    }
+    .btn-save:hover { background: var(--color-primary-hover); }
+
+    /* Limit */
+    .limit-row { display: flex; align-items: center; gap: var(--space-sm); }
+    .limit-input {
+      width: 160px; padding: 9px 12px;
+      border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+      font-size: 14px; color: var(--color-text-primary); outline: none; text-align: right;
+    }
+    .limit-input:focus { border-color: var(--color-primary); }
+    .limit-unit { font-size: 14px; color: var(--color-text-secondary); }
+    .limit-hint { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-sm); }
+
+    /* Drive options */
+    .drive-options { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-sm); margin-bottom: var(--space-md); }
+    .drive-option {
+      border: 2px solid var(--color-border); border-radius: var(--radius-sm);
+      padding: var(--space-md); cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .drive-option:hover { border-color: #A5B4FC; }
+    .drive-option--selected { border-color: var(--color-primary); background: #F5F6FE; }
+    .drive-option__title {
+      font-size: 13.5px; font-weight: 500; color: var(--color-text-primary);
+      display: flex; align-items: center; gap: var(--space-xs); margin-bottom: 4px;
+    }
+    .drive-option__desc { font-size: 12px; color: var(--color-text-secondary); line-height: 1.4; }
+    .radio-dot {
+      width: 14px; height: 14px; flex-shrink: 0;
+      border: 2px solid var(--color-border); border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .drive-option--selected .radio-dot { border-color: var(--color-primary); background: var(--color-primary); }
+    .drive-option--selected .radio-dot::after { content:''; width:5px; height:5px; border-radius:50%; background:#fff; }
+
+    .manager-section { margin-top: var(--space-sm); }
+    .manager-chips { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin-bottom: var(--space-sm); }
+    .manager-chip {
+      display: flex; align-items: center; gap: 5px;
+      background: #EEF0FE; color: var(--color-primary);
+      font-size: 13px; padding: 5px 10px; border-radius: 20px;
+    }
+    .manager-chip__remove { background:none; border:none; cursor:pointer; color:var(--color-primary); padding:0; font-size:16px; line-height:1; }
+    .btn-add-manager {
+      display: inline-flex; align-items: center; gap: var(--space-xs);
+      padding: 7px 12px; border: 1px dashed var(--color-border);
+      border-radius: var(--radius-sm); background: none;
+      color: var(--color-text-secondary); font-size: 13px; cursor: pointer;
+    }
+    .btn-add-manager:hover { border-color: var(--color-primary); color: var(--color-primary); }
+
+    /* ── Excel Upload ───────────────────────────────────── */
+    .excel-upload { flex: 1; overflow-y: auto; padding: var(--space-xl); }
+    .upload-card {
+      background: var(--color-surface); border: 1px solid var(--color-border);
+      border-radius: var(--radius-md); padding: var(--space-xl);
+      max-width: 720px;
+    }
+    .upload-steps { display: flex; align-items: center; margin-bottom: var(--space-xl); }
+    .upload-step { display: flex; align-items: center; gap: var(--space-xs); font-size: 13px; color: var(--color-text-disabled); white-space: nowrap; }
+    .step-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 1.5px solid var(--color-text-disabled);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 600; flex-shrink: 0;
+    }
+    .upload-step--active { color: var(--color-primary); }
+    .upload-step--active .step-num { border-color: var(--color-primary); background: var(--color-primary); color: #fff; }
+    .upload-step--done { color: var(--color-text-secondary); }
+    .upload-step--done .step-num { border-color: #10B981; background: #10B981; color: #fff; }
+    .step-line { flex: 1; height: 1px; background: var(--color-border); margin: 0 var(--space-sm); min-width: 16px; }
+
+    .upload-dropzone {
+      border: 2px dashed var(--color-border); border-radius: var(--radius-md);
+      padding: var(--space-xl) var(--space-lg);
+      text-align: center; cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .upload-dropzone:hover { border-color: var(--color-primary); background: #F5F6FE; }
+    .upload-dropzone__title { font-size: 15px; font-weight: 500; color: var(--color-text-primary); margin: var(--space-sm) 0 var(--space-xs); }
+    .upload-dropzone__sub { font-size: 13px; color: var(--color-text-secondary); }
+    .upload-dropzone__btn {
+      margin-top: var(--space-md); display: inline-flex; align-items: center; gap: var(--space-xs);
+      padding: 9px 20px; background: var(--color-primary); color: #fff;
+      border: none; border-radius: var(--radius-sm); font-size: 14px; cursor: pointer;
+    }
+    .upload-dropzone__btn:hover { background: var(--color-primary-hover); }
+
+    .spec-table { margin-top: var(--space-xl); width: 100%; border-collapse: collapse; font-size: 13px; }
+    .spec-table th { background: var(--color-bg); padding: 8px 12px; text-align: left; color: var(--color-text-secondary); font-weight: 500; border-bottom: 1px solid var(--color-border); }
+    .spec-table td { padding: 8px 12px; border-bottom: 1px solid var(--color-border); color: var(--color-text-primary); }
+    .badge-required { display: inline-block; font-size: 10px; background: #FEE2E2; color: #DC2626; padding: 1px 6px; border-radius: 8px; }
+    .badge-optional { display: inline-block; font-size: 10px; background: var(--color-bg); color: var(--color-text-secondary); padding: 1px 6px; border-radius: 8px; }
+
+    .preview-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg); }
+    .preview-stat { background: var(--color-bg); border-radius: var(--radius-sm); padding: var(--space-md); text-align: center; }
+    .preview-stat__val { font-size: 28px; font-weight: 700; color: var(--color-text-primary); }
+    .preview-stat__label { font-size: 12px; color: var(--color-text-secondary); }
+    .preview-stat--add .preview-stat__val { color: #10B981; }
+    .preview-stat--update .preview-stat__val { color: #3B82F6; }
+    .preview-stat--warn .preview-stat__val { color: #F59E0B; }
+
+    .issue-section { margin-bottom: var(--space-lg); }
+    .issue-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-sm); }
+    .issue-title--error { color: #DC2626; }
+    .issue-title--warn { color: #D97706; }
+    .issue-item { padding: 8px 12px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 4px; }
+    .issue-item--error { background: #FFF5F5; border: 1px solid #FCA5A5; color: #DC2626; }
+    .issue-item--warn { background: #FFFBEB; border: 1px solid #FCD34D; color: #D97706; }
+
+    .upload-footer { display: flex; gap: var(--space-sm); justify-content: flex-end; margin-top: var(--space-lg); }
+    .btn-secondary { padding: 9px 18px; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text-primary); border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; }
+    .btn-secondary:hover { background: var(--color-bg); }
+    .btn-primary { padding: 9px 18px; background: var(--color-primary); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; }
+    .btn-primary:hover { background: var(--color-primary-hover); }
+    .btn-warn { padding: 9px 18px; background: #F59E0B; color: #fff; border: none; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; }
+    .btn-warn:hover { background: #D97706; }
+    .btn-danger { padding: 9px 18px; background: #DC2626; color: #fff; border: none; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; }
+    .btn-danger:hover { background: #B91C1C; }
+
+    /* ── Modals ─────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+      display: none; align-items: center; justify-content: center; z-index: 2000;
+    }
+    .modal-overlay--open { display: flex; }
+    .modal-box {
+      background: var(--color-surface); border-radius: var(--radius-lg);
+      padding: var(--space-xl); width: 420px; max-width: 90vw; position: relative;
+    }
+    .modal-box--lg { width: 520px; }
+    .modal-title { font-size: 16px; font-weight: 600; color: var(--color-text-primary); margin-bottom: var(--space-lg); }
+    .modal-close {
+      position: absolute; top: var(--space-md); right: var(--space-md);
+      width: 28px; height: 28px; border: none; background: none; cursor: pointer;
+      color: var(--color-text-secondary); display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm);
+    }
+    .modal-close:hover { background: var(--color-bg); }
+    .form-field { margin-bottom: var(--space-md); }
+    .form-label { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 6px; display: block; }
+    .form-input { width: 100%; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 14px; outline: none; box-sizing: border-box; }
+    .form-input:focus { border-color: var(--color-primary); }
+    .modal-footer { display: flex; justify-content: flex-end; gap: var(--space-sm); margin-top: var(--space-lg); }
+
+    .member-list { max-height: 280px; overflow-y: auto; border: 1px solid var(--color-border); border-radius: var(--radius-sm); }
+    .member-row {
+      display: flex; align-items: center; gap: var(--space-sm);
+      padding: 9px var(--space-sm);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .member-row:last-child { border-bottom: none; }
+    .m-avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600; color: #fff; flex-shrink: 0;
+    }
+    .m-info { flex: 1; }
+    .m-name { font-size: 13.5px; color: var(--color-text-primary); }
+    .m-email { font-size: 12px; color: var(--color-text-secondary); }
+    .m-check { width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; }
+
+    .modal-note { font-size: 12px; color: var(--color-text-secondary); margin-top: var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--color-border); }
+    .modal-search { margin-bottom: var(--space-sm); }
+    .selected-count { font-size: 12px; color: var(--color-text-secondary); margin-bottom: var(--space-xs); }
+
+    .delete-warning {
+      background: #FFF5F5; border: 1px solid #FCA5A5;
+      border-radius: var(--radius-sm); padding: var(--space-md);
+      font-size: 13px; color: #7F1D1D;
+      display: flex; gap: var(--space-sm); align-items: flex-start;
+      margin-bottom: var(--space-md); line-height: 1.5;
+    }
+
+    /* Spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 3px solid var(--color-border); border-top-color: var(--color-primary);
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto var(--space-md);
+    }
+
+    /* Step-done checkmark in step-num */
+    .step-num--check::after { content: '✓'; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ════ Admin Sidebar ════ -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar__header">
+      <div class="admin-logo">W</div>
+      <span class="admin-sidebar__title">워크에이아이</span>
+      <span class="admin-badge">관리자</span>
+    </div>
+    <nav class="admin-nav">
+      <ul class="admin-nav__list">
+        <li><a href="info.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+          기본 정보
+        </a></li>
+        <li><a href="#" class="admin-nav__link" data-wip>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+          대시보드
+        </a></li>
+        <li><a href="usage.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          토큰 사용량
+        </a></li>
+        <li><a href="org.html" class="admin-nav__link admin-nav__link--active">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          조직
+        </a></li>
+        <li><a href="members.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          구성원
+        </a></li>
+        <li><a href="ai-settings.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          AI 설정
+        </a></li>
+        <li><a href="security.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          보안 설정
+        </a></li>
+        <li><a href="records.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          기록
+        </a></li>
+      </ul>
+    </nav>
+    <div class="admin-sidebar__footer">
+      <a href="../index.html" class="admin-back-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        사용자 페이지로 이동
+      </a>
+    </div>
+  </aside>
+
+  <!-- ════ Admin Main ════ -->
+  <main class="admin-main">
+
+    <!-- Topbar -->
+    <div class="admin-topbar">
+      <span class="admin-topbar__title">조직 관리</span>
+      <div class="admin-tabs">
+        <div class="admin-tab admin-tab--active" id="tab-tree" onclick="switchTab('tree')">조직 트리</div>
+        <div class="admin-tab" id="tab-excel" onclick="switchTab('excel')">엑셀 업로드</div>
+      </div>
+    </div>
+
+    <!-- ── Tab: 조직 트리 ── -->
+    <div class="org-layout" id="panel-tree">
+
+      <!-- Left: Tree -->
+      <div class="org-tree-panel">
+        <div class="org-tree-search">
+          <input type="text" class="org-tree-search__input" id="treeSearch"
+                 placeholder="부서명 검색..." oninput="searchTree(this.value)">
+        </div>
+        <div class="org-tree-body" id="treeBody"></div>
+      </div>
+
+      <!-- Right: Detail -->
+      <div class="org-detail-panel" id="detailPanel">
+        <div class="detail-empty">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" style="color:var(--color-text-disabled)"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <p style="font-size:14px;color:var(--color-text-secondary);margin:0">부서를 선택하면 세부 정보가 표시됩니다</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tab: 엑셀 업로드 ── -->
+    <div class="excel-upload" id="panel-excel" style="display:none">
+      <div class="upload-card">
+
+        <!-- Step indicator -->
+        <div class="upload-steps">
+          <div class="upload-step upload-step--active" id="xstep-1">
+            <div class="step-num" id="xstep-num-1">1</div><span>파일 선택</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="upload-step" id="xstep-2">
+            <div class="step-num" id="xstep-num-2">2</div><span>유효성 검사</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="upload-step" id="xstep-3">
+            <div class="step-num" id="xstep-num-3">3</div><span>미리보기</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="upload-step" id="xstep-4">
+            <div class="step-num" id="xstep-num-4">4</div><span>적용 완료</span>
+          </div>
+        </div>
+
+        <!-- State: select -->
+        <div id="xs-select">
+          <div class="upload-dropzone" onclick="triggerExcel()">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--color-text-disabled)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div class="upload-dropzone__title">파일을 끌어다 놓거나 선택하세요</div>
+            <div class="upload-dropzone__sub">.xlsx, .xls · 최대 5MB · 최대 1,000행</div>
+            <button class="upload-dropzone__btn" onclick="event.stopPropagation();triggerExcel()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              파일 선택
+            </button>
+          </div>
+          <input type="file" id="excelInput" accept=".xlsx,.xls" style="display:none" onchange="handleExcelFile(this)">
+
+          <div style="margin-top:var(--space-xl)">
+            <div style="font-size:13px;font-weight:600;color:var(--color-text-secondary);margin-bottom:var(--space-md)">컬럼 정의</div>
+            <table class="spec-table">
+              <thead><tr><th>컬럼명</th><th>필수 여부</th><th>설명</th></tr></thead>
+              <tbody>
+                <tr><td>부서코드</td><td><span class="badge-required">필수</span></td><td>고유값, 계층 연결 기준</td></tr>
+                <tr><td>부서명</td><td><span class="badge-required">필수</span></td><td>중복 불가</td></tr>
+                <tr><td>상위부서코드</td><td><span class="badge-required">필수</span></td><td>최상위 부서는 공백</td></tr>
+                <tr><td>월별 한도</td><td><span class="badge-optional">선택</span></td><td>숫자(원 단위), 공백 시 한도 없음</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- State: validating -->
+        <div id="xs-validating" style="display:none;text-align:center;padding:var(--space-xl) 0">
+          <div class="spinner"></div>
+          <div style="font-size:15px;font-weight:500;color:var(--color-text-primary)">파일을 분석하고 있습니다...</div>
+          <div style="font-size:13px;color:var(--color-text-secondary);margin-top:var(--space-xs)">조직도_2025.xlsx · 32행</div>
+        </div>
+
+        <!-- State: preview (warnings only) -->
+        <div id="xs-preview" style="display:none">
+          <div style="font-size:15px;font-weight:600;color:var(--color-text-primary);margin-bottom:var(--space-md)">변경 미리보기</div>
+          <div class="preview-summary">
+            <div class="preview-stat preview-stat--add"><div class="preview-stat__val">3</div><div class="preview-stat__label">신규 추가</div></div>
+            <div class="preview-stat preview-stat--update"><div class="preview-stat__val">5</div><div class="preview-stat__label">정보 업데이트</div></div>
+            <div class="preview-stat preview-stat--warn"><div class="preview-stat__val">2</div><div class="preview-stat__label">경고</div></div>
+          </div>
+          <div class="issue-section">
+            <div class="issue-title issue-title--warn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              경고 (적용 가능, 검토 권장)
+            </div>
+            <div class="issue-item issue-item--warn">15행: 월별 한도 값이 숫자가 아님 — "오만원" (해당 행 한도 무시됩니다)</div>
+            <div class="issue-item issue-item--warn">22행: 상위부서코드 없음 — DEPT-NEW가 최상위 부서로 처리됩니다</div>
+          </div>
+          <div class="upload-footer">
+            <button class="btn-secondary" onclick="resetExcel()">취소</button>
+            <button class="btn-warn" onclick="applyExcel()">경고 무시하고 적용</button>
+            <button class="btn-primary" onclick="applyExcel()">적용</button>
+          </div>
+        </div>
+
+        <!-- State: errors (blocking) -->
+        <div id="xs-errors" style="display:none">
+          <div style="font-size:15px;font-weight:600;color:var(--color-text-primary);margin-bottom:var(--space-md)">유효성 검사 결과</div>
+          <div class="issue-section">
+            <div class="issue-title issue-title--error">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              차단 오류 — 수정 후 재업로드 필요
+            </div>
+            <div class="issue-item issue-item--error">3행: 부서코드 중복 (A001)</div>
+            <div class="issue-item issue-item--error">7행: 부서명 공백</div>
+            <div class="issue-item issue-item--error">11행: 순환 참조 감지 (DEPT-003 → DEPT-005 → DEPT-003)</div>
+          </div>
+          <div class="upload-footer">
+            <button class="btn-secondary" onclick="resetExcel()">닫기</button>
+          </div>
+        </div>
+
+        <!-- State: done -->
+        <div id="xs-done" style="display:none;text-align:center;padding:var(--space-xl) 0">
+          <div style="width:52px;height:52px;background:#D1FAE5;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-md)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div style="font-size:16px;font-weight:600;color:var(--color-text-primary);margin-bottom:var(--space-xs)">조직도가 업데이트되었습니다</div>
+          <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:var(--space-lg)">신규 3개 · 업데이트 5개 적용 완료</div>
+          <button class="btn-primary" onclick="resetExcel()">확인</button>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ════ Modals ════ -->
+
+<!-- Add Dept -->
+<div class="modal-overlay" id="modal-add">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-add')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div class="modal-title">하위 부서 추가</div>
+    <div id="addDeptParent" style="font-size:13px;color:var(--color-text-secondary);margin-bottom:var(--space-md)"></div>
+    <div class="form-field">
+      <label class="form-label">부서명 <span style="color:#DC2626">*</span></label>
+      <input type="text" class="form-input" id="addDeptInput" placeholder="예: 마케팅팀" onkeydown="if(event.key==='Enter')submitAddDept()">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modal-add')">취소</button>
+      <button class="btn-primary" onclick="submitAddDept()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rename -->
+<div class="modal-overlay" id="modal-rename">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-rename')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div class="modal-title">이름 바꾸기</div>
+    <div class="form-field">
+      <label class="form-label">부서명</label>
+      <input type="text" class="form-input" id="renameInput" onkeydown="if(event.key==='Enter')submitRename()">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modal-rename')">취소</button>
+      <button class="btn-primary" onclick="submitRename()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm -->
+<div class="modal-overlay" id="modal-delete">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-delete')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div class="modal-title">부서 삭제</div>
+    <div class="delete-warning">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div><strong id="deleteDeptName"></strong>과(와) 하위 부서 전체가 삭제됩니다.<br>이 작업은 되돌릴 수 없습니다.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modal-delete')">취소</button>
+      <button class="btn-danger" onclick="confirmDelete()">삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- Members view -->
+<div class="modal-overlay" id="modal-members">
+  <div class="modal-box modal-box--lg">
+    <button class="modal-close" onclick="closeModal('modal-members')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div class="modal-title" id="memberModalTitle">구성원 목록</div>
+    <div class="member-list" id="memberModalList"></div>
+    <div class="modal-note">구성원 추가·삭제는 <a href="#" style="color:var(--color-primary)" data-wip>구성원 관리 페이지</a>에서 할 수 있습니다.</div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modal-members')">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add manager -->
+<div class="modal-overlay" id="modal-manager">
+  <div class="modal-box modal-box--lg">
+    <button class="modal-close" onclick="closeModal('modal-manager')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div class="modal-title">담당자 추가</div>
+    <div class="modal-search">
+      <input type="text" class="form-input" placeholder="이름 또는 이메일 검색..." oninput="filterManagers(this.value)" id="managerSearch">
+    </div>
+    <div class="selected-count" id="managerCount">0명 선택됨</div>
+    <div class="member-list" id="managerList"></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modal-manager')">취소</button>
+      <button class="btn-primary" onclick="submitManagers()">추가</button>
+    </div>
+  </div>
+</div>
+
+<div id="appToast" class="toast"></div>
+<script src="../js/common.js"></script>
+<script>
+// ══════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════
+const MEMBERS = [
+  { id:'m1',  name:'홍길동', email:'hong@workai.co',     color:'#5B6EF5', dept:'root'    },
+  { id:'m2',  name:'김지수', email:'kim.js@workai.co',   color:'#10B981', dept:'dept-1'  },
+  { id:'m3',  name:'이민준', email:'lee.mj@workai.co',   color:'#F59E0B', dept:'dept-1'  },
+  { id:'m4',  name:'박서연', email:'park.sy@workai.co',  color:'#EC4899', dept:'dept-1-1'},
+  { id:'m5',  name:'최현우', email:'choi.hw@workai.co',  color:'#8B5CF6', dept:'dept-1-1'},
+  { id:'m6',  name:'정다은', email:'jung.de@workai.co',  color:'#3B82F6', dept:'dept-1-2'},
+  { id:'m7',  name:'한승민', email:'han.sm@workai.co',   color:'#EF4444', dept:'dept-1-2'},
+  { id:'m8',  name:'오지훈', email:'oh.jh@workai.co',    color:'#14B8A6', dept:'dept-2'  },
+  { id:'m9',  name:'윤채원', email:'yoon.cw@workai.co',  color:'#F97316', dept:'dept-2'  },
+  { id:'m10', name:'임수빈', email:'lim.sb@workai.co',   color:'#6366F1', dept:'dept-2-1'},
+  { id:'m11', name:'강태양', email:'kang.ty@workai.co',  color:'#D97706', dept:'dept-2-1'},
+  { id:'m12', name:'신예진', email:'shin.yj@workai.co',  color:'#059669', dept:'dept-2-1'},
+  { id:'m13', name:'백준혁', email:'baek.jh@workai.co',  color:'#7C3AED', dept:'dept-2-2'},
+  { id:'m14', name:'조민서', email:'jo.ms@workai.co',    color:'#DC2626', dept:'dept-2-2'},
+  { id:'m15', name:'유다현', email:'yu.dh@workai.co',    color:'#0891B2', dept:'dept-2-3'},
+  { id:'m16', name:'권성호', email:'kwon.sh@workai.co',  color:'#65A30D', dept:'dept-3'  },
+  { id:'m17', name:'황지민', email:'hwang.jm@workai.co', color:'#C026D3', dept:'dept-3-1'},
+  { id:'m18', name:'나예슬', email:'na.ys@workai.co',    color:'#E11D48', dept:'dept-3-2'},
+];
+
+let orgTree = {
+  id:'root', name:'워크에이아이', memberCount:18, isRoot:true,
+  driveMode:'all', managers:[], limit:null, expanded:true,
+  children:[
+    { id:'dept-1', name:'경영지원본부', memberCount:6, limit:500000,
+      driveMode:'all', managers:[], expanded:true,
+      children:[
+        { id:'dept-1-1', name:'인사팀',  memberCount:2, limit:null, driveMode:'all', managers:[], expanded:false, children:[] },
+        { id:'dept-1-2', name:'재무팀',  memberCount:2, limit:null, driveMode:'managers',
+          managers:[{ id:'m6', name:'정다은', color:'#3B82F6' }], expanded:false, children:[] },
+      ]},
+    { id:'dept-2', name:'개발본부', memberCount:8, limit:null,
+      driveMode:'all', managers:[], expanded:true,
+      children:[
+        { id:'dept-2-1', name:'프론트엔드팀', memberCount:3, limit:300000, driveMode:'all', managers:[], expanded:false, children:[] },
+        { id:'dept-2-2', name:'백엔드팀',     memberCount:2, limit:null,   driveMode:'all', managers:[], expanded:false, children:[] },
+        { id:'dept-2-3', name:'AI팀',         memberCount:1, limit:null,   driveMode:'all', managers:[], expanded:false, children:[] },
+      ]},
+    { id:'dept-3', name:'사업본부', memberCount:3, limit:null,
+      driveMode:'all', managers:[], expanded:false,
+      children:[
+        { id:'dept-3-1', name:'영업팀',   memberCount:1, limit:null, driveMode:'all', managers:[], expanded:false, children:[] },
+        { id:'dept-3-2', name:'마케팅팀', memberCount:1, limit:null, driveMode:'all', managers:[], expanded:false, children:[] },
+      ]},
+  ]
+};
+
+let selectedId = null;
+let pendingId  = null;
+let activeDropdown = null;
+
+// ══════════════════════════════════════════════
+//  TREE UTILITIES
+// ══════════════════════════════════════════════
+function findNode(id, node = orgTree) {
+  if (node.id === id) return node;
+  for (const c of (node.children || [])) {
+    const f = findNode(id, c); if (f) return f;
+  }
+  return null;
+}
+
+function findAncestors(targetId, node = orgTree, path = []) {
+  if (node.id === targetId) return path;
+  for (const c of (node.children || [])) {
+    const r = findAncestors(targetId, c, [...path, node]);
+    if (r) return r;
+  }
+  return null;
+}
+
+function removeNode(targetId, children) {
+  const i = children.findIndex(c => c.id === targetId);
+  if (i !== -1) { children.splice(i, 1); return true; }
+  for (const c of children) if (removeNode(targetId, c.children || [])) return true;
+  return false;
+}
+
+// ══════════════════════════════════════════════
+//  TREE RENDER
+// ══════════════════════════════════════════════
+function renderNode(node, depth = 0) {
+  const hasKids  = (node.children || []).length > 0;
+  const isActive = node.id === selectedId;
+  const indent   = depth * 18;
+
+  const chevron = hasKids
+    ? (node.expanded
+        ? `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>`
+        : `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>`)
+    : '';
+
+  const limitBadge = node.limit
+    ? `<span class="tree-limit-badge">한도 ${(node.limit/10000).toFixed(0)}만원</span>` : '';
+
+  const rootIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`;
+  const deptIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>`;
+
+  const kebab = !node.isRoot
+    ? `<button class="tree-action-btn" title="더보기"
+               onclick="event.stopPropagation();openTreeMenu(event,'${node.id}')">···</button>` : '';
+
+  return `
+  <div class="tree-node" id="tn-${node.id}">
+    <div class="tree-node__row${isActive ? ' tree-node__row--active' : ''}"
+         style="padding-left:${6 + indent}px"
+         onclick="selectDept('${node.id}')">
+      <span class="tree-node__toggle${!hasKids ? ' tree-node__toggle--leaf' : ''}"
+            onclick="event.stopPropagation();toggleNode('${node.id}')">${chevron}</span>
+      <span class="tree-node__icon">${depth === 0 ? rootIcon : deptIcon}</span>
+      <div class="tree-node__info">
+        <div class="tree-node__name">${node.name}</div>
+        <div class="tree-node__meta">${node.memberCount}명 ${limitBadge}</div>
+      </div>
+      <div class="tree-node__actions">
+        <button class="tree-action-btn" title="하위 부서 추가"
+                onclick="event.stopPropagation();openAddModal('${node.id}')">+</button>
+        ${kebab}
+      </div>
+    </div>
+    <div class="tree-node__children${node.expanded ? '' : ' tree-node__children--collapsed'}">
+      ${(node.children || []).map(c => renderNode(c, depth + 1)).join('')}
+    </div>
+  </div>`;
+}
+
+function refreshTree() {
+  document.getElementById('treeBody').innerHTML = renderNode(orgTree);
+}
+
+// ══════════════════════════════════════════════
+//  TREE INTERACTIONS
+// ══════════════════════════════════════════════
+function toggleNode(id) {
+  const n = findNode(id); if (n) { n.expanded = !n.expanded; refreshTree(); }
+}
+
+function selectDept(id) {
+  selectedId = id;
+  refreshTree();
+  renderDetail(id);
+  closeTreeMenu();
+}
+
+function searchTree(q) {
+  q = q.trim().toLowerCase();
+  if (!q) { refreshTree(); return; }
+
+  function markExpand(node) {
+    const self = node.name.toLowerCase().includes(q);
+    let childHit = false;
+    for (const c of (node.children || [])) if (markExpand(c)) childHit = true;
+    if (childHit) node.expanded = true;
+    return self || childHit;
+  }
+  markExpand(orgTree);
+
+  function renderHighlighted(node, depth = 0) {
+    const hasKids = (node.children || []).length > 0;
+    const isActive = node.id === selectedId;
+    const indent   = depth * 18;
+    const nameHtml = node.name.replace(new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),
+      m => `<mark style="background:#FEF3C7;border-radius:2px">${m}</mark>`);
+    const chevron = hasKids
+      ? (node.expanded
+          ? `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>`
+          : `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>`)
+      : '';
+    const rootIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`;
+    const deptIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>`;
+    const kebab = !node.isRoot
+      ? `<button class="tree-action-btn" onclick="event.stopPropagation();openTreeMenu(event,'${node.id}')">···</button>` : '';
+    return `
+    <div class="tree-node" id="tn-${node.id}">
+      <div class="tree-node__row${isActive ? ' tree-node__row--active' : ''}"
+           style="padding-left:${6 + indent}px"
+           onclick="selectDept('${node.id}')">
+        <span class="tree-node__toggle${!hasKids ? ' tree-node__toggle--leaf' : ''}"
+              onclick="event.stopPropagation();toggleNode('${node.id}')">${chevron}</span>
+        <span class="tree-node__icon">${depth === 0 ? rootIcon : deptIcon}</span>
+        <div class="tree-node__info">
+          <div class="tree-node__name">${nameHtml}</div>
+          <div class="tree-node__meta">${node.memberCount}명</div>
+        </div>
+        <div class="tree-node__actions">
+          <button class="tree-action-btn" onclick="event.stopPropagation();openAddModal('${node.id}')">+</button>
+          ${kebab}
+        </div>
+      </div>
+      <div class="tree-node__children${node.expanded ? '' : ' tree-node__children--collapsed'}">
+        ${(node.children || []).map(c => renderHighlighted(c, depth + 1)).join('')}
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('treeBody').innerHTML = renderHighlighted(orgTree);
+}
+
+// ══════════════════════════════════════════════
+//  TREE DROPDOWN MENU
+// ══════════════════════════════════════════════
+function openTreeMenu(e, id) {
+  e.stopPropagation();
+  closeTreeMenu();
+  const rect = e.currentTarget.getBoundingClientRect();
+  const dd = document.createElement('div');
+  dd.className = 'tree-dropdown';
+  dd.style.cssText = `top:${rect.bottom + 4}px;left:${rect.left - 110}px`;
+  dd.innerHTML = `
+    <div class="tree-dropdown__item" onclick="openAddModal('${id}')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      하위 부서 추가
+    </div>
+    <div class="tree-dropdown__item" onclick="openRenameModal('${id}')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      이름 바꾸기
+    </div>
+    <div class="tree-dropdown__item tree-dropdown__item--danger" onclick="openDeleteModal('${id}')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      삭제
+    </div>`;
+  document.body.appendChild(dd);
+  activeDropdown = dd;
+}
+
+function closeTreeMenu() {
+  if (activeDropdown) { activeDropdown.remove(); activeDropdown = null; }
+}
+
+document.addEventListener('click', closeTreeMenu);
+
+// ══════════════════════════════════════════════
+//  DETAIL PANEL
+// ══════════════════════════════════════════════
+function renderDetail(id) {
+  const node = findNode(id);
+  if (!node) return;
+
+  const ancestors = findAncestors(id) || [];
+  const crumbHtml = ancestors.map(a =>
+    `<span class="detail-breadcrumb__link" onclick="selectDept('${a.id}')">${a.name}</span>
+     <span style="opacity:0.4;margin:0 3px">/</span>`
+  ).join('') + `<span>${node.name}</span>`;
+
+  const deleteBtn = !node.isRoot
+    ? `<button class="detail-delete-btn" onclick="openDeleteModal('${id}')">삭제</button>` : '';
+
+  const directMembers = MEMBERS.filter(m => m.dept === id).length;
+  const childCount    = (node.children || []).length;
+
+  const nameField = node.isRoot
+    ? `<div class="info-field">
+         <input class="info-input info-input--readonly" value="${node.name}" readonly>
+         <a class="info-link" href="#" data-wip>기본 정보에서 수정</a>
+       </div>`
+    : `<div class="info-field">
+         <input class="info-input" id="nameInput" value="${node.name}"
+                onkeydown="if(event.key==='Enter')saveName('${id}')">
+         <button class="btn-save" onclick="saveName('${id}')">저장</button>
+       </div>`;
+
+  const driveSection = `
+    <div class="drive-options">
+      <div class="drive-option${node.driveMode==='all' ? ' drive-option--selected' : ''}"
+           onclick="setDriveMode('${id}','all')">
+        <div class="drive-option__title"><span class="radio-dot"></span>모든 구성원</div>
+        <div class="drive-option__desc">부서 구성원 전체가 드라이브를 관리할 수 있습니다</div>
+      </div>
+      <div class="drive-option${node.driveMode==='managers' ? ' drive-option--selected' : ''}"
+           onclick="setDriveMode('${id}','managers')">
+        <div class="drive-option__title"><span class="radio-dot"></span>담당자 지정</div>
+        <div class="drive-option__desc">특정 구성원에게만 드라이브 관리 권한을 부여합니다</div>
+      </div>
+    </div>
+    <div id="managerWrapper">${node.driveMode === 'managers' ? buildManagerSection(node) : ''}</div>`;
+
+  document.getElementById('detailPanel').innerHTML = `
+    <div class="detail-breadcrumb">${crumbHtml}</div>
+    <div class="detail-header">
+      <div class="detail-dept-name">${node.name}</div>
+      ${deleteBtn}
+    </div>
+
+    <div class="detail-card">
+      <div class="detail-card__title">요약</div>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <div class="summary-item__label">전체 구성원</div>
+          <div class="summary-item__value">${node.memberCount}<span class="summary-item__unit">명</span></div>
+          <div class="summary-item__action">
+            <button class="btn-text-link" onclick="openMembersModal('${id}')">직속 구성원 보기 (${directMembers}명)</button>
+          </div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-item__label">하위 부서</div>
+          <div class="summary-item__value">${childCount}<span class="summary-item__unit">개</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-card">
+      <div class="detail-card__title">기본 정보</div>
+      ${nameField}
+    </div>
+
+    <div class="detail-card">
+      <div class="detail-card__title">월별 사용 한도</div>
+      <div class="limit-row">
+        <input type="text" class="limit-input" id="limitInput"
+               value="${node.limit ? node.limit.toLocaleString() : ''}"
+               placeholder="한도 없음"
+               oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+               onblur="saveLimit('${id}',this.value)">
+        <span class="limit-unit">원 / 월</span>
+      </div>
+      <div class="limit-hint">비워두면 한도 없음으로 처리됩니다. 상·하위 부서와 독립 적용됩니다.</div>
+    </div>
+
+    <div class="detail-card">
+      <div class="detail-card__title">드라이브 관리</div>
+      ${driveSection}
+    </div>`;
+}
+
+function buildManagerSection(node) {
+  const chips = (node.managers || []).map(m =>
+    `<div class="manager-chip">
+       <span>${m.name}</span>
+       <button class="manager-chip__remove" onclick="removeManager('${node.id}','${m.id}')">×</button>
+     </div>`).join('');
+  return `
+    <div class="manager-section">
+      <div class="manager-chips">${chips}</div>
+      <button class="btn-add-manager" onclick="openManagerModal('${node.id}')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        담당자 추가
+      </button>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════
+//  DETAIL ACTIONS
+// ══════════════════════════════════════════════
+function saveName(id) {
+  const v = document.getElementById('nameInput').value.trim();
+  if (!v) return;
+  const n = findNode(id); n.name = v;
+  refreshTree(); renderDetail(id);
+  showToast('부서명이 저장되었습니다');
+}
+
+function saveLimit(id, val) {
+  const n = findNode(id);
+  const num = parseInt(val.replace(/,/g,''), 10);
+  n.limit = isNaN(num) ? null : num;
+  refreshTree();
+  showToast(n.limit ? `월별 한도가 ${n.limit.toLocaleString()}원으로 설정되었습니다` : '한도가 해제되었습니다');
+}
+
+function setDriveMode(id, mode) {
+  const n = findNode(id);
+  n.driveMode = mode;
+  if (mode === 'all') n.managers = [];
+  renderDetail(id);
+}
+
+function removeManager(deptId, memberId) {
+  const n = findNode(deptId);
+  n.managers = n.managers.filter(m => m.id !== memberId);
+  document.getElementById('managerWrapper').innerHTML = buildManagerSection(n);
+  showToast('담당자가 제거되었습니다');
+}
+
+// ══════════════════════════════════════════════
+//  ADD DEPT MODAL
+// ══════════════════════════════════════════════
+function openAddModal(parentId) {
+  closeTreeMenu();
+  pendingId = parentId;
+  const p = findNode(parentId);
+  document.getElementById('addDeptParent').textContent = `상위 부서: ${p.name}`;
+  document.getElementById('addDeptInput').value = '';
+  openModal('modal-add');
+  setTimeout(() => document.getElementById('addDeptInput').focus(), 80);
+}
+
+function submitAddDept() {
+  const name = document.getElementById('addDeptInput').value.trim();
+  if (!name) { showToast('부서명을 입력해주세요'); return; }
+  const parent = findNode(pendingId);
+  const newId  = 'dept-' + Date.now();
+  parent.children.push({ id:newId, name, memberCount:0, limit:null, driveMode:'all', managers:[], expanded:false, children:[] });
+  parent.expanded = true;
+  closeModal('modal-add');
+  refreshTree();
+  selectDept(newId);
+  showToast(`"${name}" 부서가 추가되었습니다`);
+}
+
+// ══════════════════════════════════════════════
+//  RENAME MODAL
+// ══════════════════════════════════════════════
+function openRenameModal(id) {
+  closeTreeMenu();
+  pendingId = id;
+  document.getElementById('renameInput').value = findNode(id).name;
+  openModal('modal-rename');
+  setTimeout(() => document.getElementById('renameInput').select(), 80);
+}
+
+function submitRename() {
+  const name = document.getElementById('renameInput').value.trim();
+  if (!name) { showToast('부서명을 입력해주세요'); return; }
+  const n = findNode(pendingId); n.name = name;
+  closeModal('modal-rename');
+  refreshTree();
+  if (selectedId === pendingId) renderDetail(pendingId);
+  showToast('이름이 변경되었습니다');
+}
+
+// ══════════════════════════════════════════════
+//  DELETE MODAL
+// ══════════════════════════════════════════════
+function openDeleteModal(id) {
+  closeTreeMenu();
+  pendingId = id;
+  document.getElementById('deleteDeptName').textContent = findNode(id).name;
+  openModal('modal-delete');
+}
+
+function confirmDelete() {
+  removeNode(pendingId, orgTree.children);
+  if (selectedId === pendingId) {
+    selectedId = null;
+    document.getElementById('detailPanel').innerHTML = `
+      <div class="detail-empty">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" style="color:var(--color-text-disabled)"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <p style="font-size:14px;color:var(--color-text-secondary);margin:0">부서를 선택하면 세부 정보가 표시됩니다</p>
+      </div>`;
+  }
+  closeModal('modal-delete');
+  refreshTree();
+  showToast('부서가 삭제되었습니다');
+}
+
+// ══════════════════════════════════════════════
+//  MEMBERS MODAL
+// ══════════════════════════════════════════════
+function openMembersModal(id) {
+  const node = findNode(id);
+  const list = MEMBERS.filter(m => m.dept === id);
+  document.getElementById('memberModalTitle').textContent = `${node.name} 직속 구성원 (${list.length}명)`;
+  document.getElementById('memberModalList').innerHTML = list.length
+    ? list.map(m => `
+        <div class="member-row">
+          <div class="m-avatar" style="background:${m.color}">${m.name[0]}</div>
+          <div class="m-info">
+            <div class="m-name">${m.name}</div>
+            <div class="m-email">${m.email}</div>
+          </div>
+        </div>`).join('')
+    : `<div style="padding:var(--space-lg);text-align:center;color:var(--color-text-secondary);font-size:13px">직속 구성원이 없습니다</div>`;
+  openModal('modal-members');
+}
+
+// ══════════════════════════════════════════════
+//  MANAGER MODAL
+// ══════════════════════════════════════════════
+let selectedManagerIds = new Set();
+
+function openManagerModal(id) {
+  pendingId = id;
+  selectedManagerIds = new Set();
+  document.getElementById('managerSearch').value = '';
+  renderManagerList(MEMBERS);
+  updateManagerCount();
+  openModal('modal-manager');
+}
+
+function renderManagerList(list) {
+  document.getElementById('managerList').innerHTML = list.map(m => `
+    <div class="member-row">
+      <div class="m-avatar" style="background:${m.color}">${m.name[0]}</div>
+      <div class="m-info">
+        <div class="m-name">${m.name}</div>
+        <div class="m-email">${m.email}</div>
+      </div>
+      <input type="checkbox" class="m-check" value="${m.id}"
+             ${selectedManagerIds.has(m.id) ? 'checked' : ''}
+             onchange="toggleManager('${m.id}',this.checked)">
+    </div>`).join('');
+}
+
+function filterManagers(q) {
+  q = q.toLowerCase();
+  renderManagerList(MEMBERS.filter(m => m.name.includes(q) || m.email.toLowerCase().includes(q)));
+}
+
+function toggleManager(id, checked) {
+  checked ? selectedManagerIds.add(id) : selectedManagerIds.delete(id);
+  updateManagerCount();
+}
+
+function updateManagerCount() {
+  document.getElementById('managerCount').textContent = `${selectedManagerIds.size}명 선택됨`;
+}
+
+function submitManagers() {
+  const node = findNode(pendingId);
+  const existingIds = new Set((node.managers||[]).map(m=>m.id));
+  selectedManagerIds.forEach(id => {
+    if (!existingIds.has(id)) {
+      const m = MEMBERS.find(x => x.id === id);
+      if (m) node.managers.push({ id:m.id, name:m.name, color:m.color });
+    }
+  });
+  closeModal('modal-manager');
+  document.getElementById('managerWrapper').innerHTML = buildManagerSection(node);
+  showToast(`담당자 ${selectedManagerIds.size}명이 추가되었습니다`);
+}
+
+// ══════════════════════════════════════════════
+//  MODAL HELPERS
+// ══════════════════════════════════════════════
+function openModal(id)  { document.getElementById(id).classList.add('modal-overlay--open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('modal-overlay--open'); }
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay--open').forEach(el => el.classList.remove('modal-overlay--open'));
+    closeTreeMenu();
+  }
+});
+
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('modal-overlay--open'); });
+});
+
+// ══════════════════════════════════════════════
+//  TAB SWITCHING
+// ══════════════════════════════════════════════
+function switchTab(name) {
+  document.getElementById('panel-tree').style.display  = name === 'tree'  ? 'flex'  : 'none';
+  document.getElementById('panel-excel').style.display = name === 'excel' ? 'block' : 'none';
+  document.getElementById('tab-tree').className  = 'admin-tab' + (name === 'tree'  ? ' admin-tab--active' : '');
+  document.getElementById('tab-excel').className = 'admin-tab' + (name === 'excel' ? ' admin-tab--active' : '');
+}
+
+// ══════════════════════════════════════════════
+//  EXCEL UPLOAD FLOW
+// ══════════════════════════════════════════════
+function triggerExcel() { document.getElementById('excelInput').click(); }
+
+function handleExcelFile(input) {
+  if (!input.files.length) return;
+  // Simulate: demo toggles between error state and warning state for variety
+  const showErrors = Math.random() > 0.5;
+  setExcelState('validating');
+  setTimeout(() => setExcelState(showErrors ? 'errors' : 'preview'), 2000);
+}
+
+function setExcelState(state) {
+  ['select','validating','preview','errors','done'].forEach(s => {
+    document.getElementById('xs-' + s).style.display = s === state ? 'block' : 'none';
+  });
+  const stepOrder = { select:1, validating:2, preview:3, errors:2, done:4 };
+  const cur = stepOrder[state] || 1;
+  for (let i = 1; i <= 4; i++) {
+    const step = document.getElementById('xstep-' + i);
+    const num  = document.getElementById('xstep-num-' + i);
+    if (i < cur)       { step.className = 'upload-step upload-step--done';   num.innerHTML = '✓'; }
+    else if (i === cur) { step.className = 'upload-step upload-step--active'; num.textContent = i; }
+    else               { step.className = 'upload-step';                     num.textContent = i; }
+  }
+}
+
+function applyExcel() {
+  setExcelState('validating');
+  setTimeout(() => setExcelState('done'), 1500);
+}
+
+function resetExcel() {
+  document.getElementById('excelInput').value = '';
+  setExcelState('select');
+}
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+refreshTree();
+selectDept('dept-1');
+initWipLinks();
+</script>
+</body>
+</html>

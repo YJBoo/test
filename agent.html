@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280">
+  <title>WorkAI — 에이전트</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ══════════════════════════════════════════
+       SIDEBAR
+  ═══════════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__header">
+      <a class="sidebar__logo" href="index.html">
+        <div class="sidebar__logo-icon">W</div>
+        <span class="sidebar__logo-text">WorkAI</span>
+      </a>
+      <button class="sidebar__toggle" id="sidebarToggle" title="메뉴 접기">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+    </div>
+
+    <nav class="sidebar__nav">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">
+            <span class="nav-link__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg></span>
+            <span class="nav-link__label">홈</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="chat.html" class="nav-link">
+            <span class="nav-link__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg></span>
+            <span class="nav-link__label">대화</span>
+          </a>
+        </li>
+        <li class="nav-item nav-item--active">
+          <a href="agent.html" class="nav-link">
+            <span class="nav-link__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><circle cx="8.5" cy="10" r="1.5"/><circle cx="15.5" cy="10" r="1.5"/><path d="M9.5 13.5s1 1 2.5 1 2.5-1 2.5-1"/></svg></span>
+            <span class="nav-link__label">에이전트</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="drive.html" class="nav-link">
+            <span class="nav-link__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg></span>
+            <span class="nav-link__label">드라이브</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link" data-wip>
+            <span class="nav-link__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg></span>
+            <span class="nav-link__label">알림</span>
+            <span class="nav-link__badge">3</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar__snb">
+      <div class="snb-section" id="favorites-section" style="display:none">
+        <div class="snb-section__header">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span class="snb-section__header-text">즐겨찾기</span>
+        </div>
+        <ul class="recent-list" id="favorites-list"></ul>
+      </div>
+      <div class="snb-section">
+        <div class="snb-section__header">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span class="snb-section__header-text">최근 항목</span>
+        </div>
+        <ul class="recent-list">
+          <li><a class="recent-item" href="#" data-wip><svg class="recent-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="recent-item__label">주간 보고서 요약 에이전트</span></a></li>
+          <li><a class="recent-item" href="chat.html"><svg class="recent-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg><span class="recent-item__label">2024년 4분기 매출 분석</span></a></li>
+          <li><a class="recent-item" href="#" data-wip><svg class="recent-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="recent-item__label">슬랙 알림 정리 에이전트</span></a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sidebar__user">
+      <div class="user-profile">
+        <div class="user-avatar">홍</div>
+        <div class="user-info">
+          <span class="user-name">홍길동</span>
+          <span class="user-role">일반 사용자</span>
+        </div>
+      </div>
+      <button class="user-settings-btn" title="설정" data-wip>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+  </aside>
+
+
+  <!-- ══════════════════════════════════════════
+       MAIN
+  ═══════════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <div class="main__topbar">
+      <div class="topbar__left">
+        <span class="topbar__title">에이전트</span>
+      </div>
+      <div class="topbar__right">
+        <button class="topbar__icon-btn" title="알림" data-wip>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          <span class="topbar__badge"></span>
+        </button>
+        <button class="btn-primary" onclick="openAgentModal()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          에이전트 추가
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="agent-tabbar">
+      <div class="agent-tabs">
+        <button class="agent-tab agent-tab--active" data-tab="my" onclick="switchTab('my')">
+          내 에이전트 <span class="tab-count" id="my-count">4</span>
+        </button>
+        <button class="agent-tab" data-tab="activity" onclick="switchTab('activity')">
+          활동 내역 <span class="tab-count">10</span>
+        </button>
+        <button class="agent-tab" data-tab="explore" onclick="switchTab('explore')">
+          에이전트 탐색
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab panels -->
+    <div class="main__body" style="flex-direction:column; overflow:hidden;">
+
+      <!-- ─────────────────────────────────────
+           TAB 1: 내 에이전트
+      ──────────────────────────────────────── -->
+      <div class="tab-panel tab-panel--active" id="tab-my">
+        <div class="tab-scroll">
+
+          <div class="agent-grid" id="agentGrid">
+
+            <!-- Card 1: 주간 보고서 요약 (active) -->
+            <div class="agent-card" id="agent-card-1">
+              <div class="agent-card__body">
+                <div class="agent-card__header">
+                  <div class="agent-card__title-row">
+                    <span class="agent-card__emoji">📋</span>
+                    <span class="agent-card__name">주간 보고서 요약 에이전트</span>
+                  </div>
+                  <label class="toggle" title="활성화 상태">
+                    <input type="checkbox" class="toggle__input" checked
+                      onchange="handleToggle(this, '주간 보고서 요약 에이전트', 'agent-card-1')">
+                    <span class="toggle__track"><span class="toggle__thumb"></span></span>
+                  </label>
+                </div>
+                <span class="agent-card__category">보고서/요약</span>
+                <p class="agent-card__desc">드라이브에 업로드된 주간 보고서를 자동으로 요약하고 팀 슬랙 채널에 공유합니다.</p>
+              </div>
+              <div class="agent-card__footer">
+                <span class="agent-card__last-run">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  오늘 09:00 실행
+                </span>
+                <div class="agent-card__actions">
+                  <span class="status-badge status-badge--success">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    성공
+                  </span>
+                  <button class="topbar__icon-btn" title="더보기" style="width:28px;height:28px" onclick="openAgentKebab(event, 1)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: 슬랙 알림 정리 (active) -->
+            <div class="agent-card" id="agent-card-2">
+              <div class="agent-card__body">
+                <div class="agent-card__header">
+                  <div class="agent-card__title-row">
+                    <span class="agent-card__emoji">🔔</span>
+                    <span class="agent-card__name">슬랙 알림 정리 에이전트</span>
+                  </div>
+                  <label class="toggle" title="활성화 상태">
+                    <input type="checkbox" class="toggle__input" checked
+                      onchange="handleToggle(this, '슬랙 알림 정리 에이전트', 'agent-card-2')">
+                    <span class="toggle__track"><span class="toggle__thumb"></span></span>
+                  </label>
+                </div>
+                <span class="agent-card__category">커뮤니케이션</span>
+                <p class="agent-card__desc">매일 아침 슬랙 알림을 분석해 중요도별로 분류하고 요약 리포트를 생성합니다.</p>
+              </div>
+              <div class="agent-card__footer">
+                <span class="agent-card__last-run">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  오늘 08:00 실행
+                </span>
+                <div class="agent-card__actions">
+                  <span class="status-badge status-badge--success">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    성공
+                  </span>
+                  <button class="topbar__icon-btn" title="더보기" style="width:28px;height:28px" onclick="openAgentKebab(event, 2)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3: 신규 입사자 온보딩 (active) -->
+            <div class="agent-card" id="agent-card-3">
+              <div class="agent-card__body">
+                <div class="agent-card__header">
+                  <div class="agent-card__title-row">
+                    <span class="agent-card__emoji">🧑‍💼</span>
+                    <span class="agent-card__name">신규 입사자 온보딩 안내 에이전트</span>
+                  </div>
+                  <label class="toggle" title="활성화 상태">
+                    <input type="checkbox" class="toggle__input" checked
+                      onchange="handleToggle(this, '신규 입사자 온보딩 안내 에이전트', 'agent-card-3')">
+                    <span class="toggle__track"><span class="toggle__thumb"></span></span>
+                  </label>
+                </div>
+                <span class="agent-card__category">HR / 온보딩</span>
+                <p class="agent-card__desc">신규 입사자 등록 시 온보딩 자료를 자동 발송하고 1주차 체크리스트를 안내합니다.</p>
+              </div>
+              <div class="agent-card__footer">
+                <span class="agent-card__last-run">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  2일 전 실행
+                </span>
+                <div class="agent-card__actions">
+                  <span class="status-badge status-badge--success">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    성공
+                  </span>
+                  <button class="topbar__icon-btn" title="더보기" style="width:28px;height:28px" onclick="openAgentKebab(event, 3)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 4: 경쟁사 모니터링 (inactive) -->
+            <div class="agent-card agent-card--inactive" id="agent-card-4">
+              <div class="agent-card__body">
+                <div class="agent-card__header">
+                  <div class="agent-card__title-row">
+                    <span class="agent-card__emoji">🔍</span>
+                    <span class="agent-card__name">경쟁사 뉴스 모니터링 에이전트</span>
+                  </div>
+                  <label class="toggle" title="비활성화 상태">
+                    <input type="checkbox" class="toggle__input"
+                      onchange="handleToggle(this, '경쟁사 뉴스 모니터링 에이전트', 'agent-card-4')">
+                    <span class="toggle__track"><span class="toggle__thumb"></span></span>
+                  </label>
+                </div>
+                <span class="agent-card__category">데이터 분석</span>
+                <p class="agent-card__desc">주요 경쟁사 뉴스·블로그·공시를 매일 모니터링하고 주요 변동사항을 요약합니다.</p>
+              </div>
+              <div class="agent-card__footer">
+                <span class="agent-card__last-run">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  3일 전 실행
+                </span>
+                <div class="agent-card__actions">
+                  <span class="status-badge status-badge--error">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    오류
+                  </span>
+                  <button class="topbar__icon-btn" title="더보기" style="width:28px;height:28px" onclick="openAgentKebab(event, 4)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /agent-grid -->
+        </div>
+      </div><!-- /tab-my -->
+
+
+      <!-- ─────────────────────────────────────
+           TAB 2: 활동 내역
+      ──────────────────────────────────────── -->
+      <div class="tab-panel" id="tab-activity" style="display:none">
+        <div class="tab-scroll" style="padding:0">
+          <div class="activity-list">
+
+            <div class="activity-item">
+              <div class="activity-item__icon">📋</div>
+              <div class="activity-item__info">
+                <div class="activity-item__agent">주간 보고서 요약 에이전트</div>
+                <div class="activity-item__task">2025년 17주차 주간 보고서 요약 완료 — 슬랙 #마케팅-보고 채널에 공유됨</div>
+              </div>
+              <div class="activity-item__right">
+                <span class="activity-item__time">오늘 09:00</span>
+                <span class="status-badge status-badge--success"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>성공</span>
+              </div>
+            </div>
+
+            <div class="activity-item">
+              <div class="activity-item__icon">🔔</div>
+              <div class="activity-item__info">
+                <div class="activity-item__agent">슬랙 알림 정리 에이전트</div>
+                <div class="activity-item__task">35개 알림 분석 완료 — 긴급 3건, 일반 18건, 참고 14건으로 분류</div>
+              </div>
+              <div class="activity-item__right">
+                <span class="activity-item__time">오늘 08:00</span>
+                <span class="status-badge status-badge--success"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>성공</span>
+              </div>
+            </div>
+
+            <div class="activity-item">
+              <div class="activity-item__icon">📋</div>
+              <div class="activity-item__info">
+                <div class="activity-item__agent">주간 보고서 요약 에이전트</div>
+                <div class="activity-item__task">2025년 16주차 주간 보고서 요약 완료 — 슬랙 #마케팅-보고 채널에 공유됨</div>
+              </div>
+              <div class="activity-item__right">
+                <span class="activity-item__time">어제 09:00</span>
+                <span class="status-badge status-badge--success"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>성공</span>
+              </div>
+            </div>
+
+            <div class="activity-item">
+              <div class="activity-item__icon">🔔</div>
+              <div class="activity-item__info">
+                <div class="activity-item__agent">슬랙 알림 정리 에이전트</div>
+                <div class="activity-item__task">28개 알림 분석 완료 — 긴급 1건, 일반 15건, 참고 12건으로 분류</div>
+              </div>
+              <div class="activity-item__right">
+                <span class="activity-item__time">어제 08:02</span>
+                <span class="status-badge status-badge--success"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>성공</span>
+              </div>
+            </div>
+
+            <div class="activity-item">
+              <div class="activity-item__icon">🧑‍💼</div>
+              <div class="activity-item__info">
+                <div class="activity-item__agent">신규 입사자 온보딩 안내 에이전트</div>
+                <div class="activity-item__task">박지수 님 온보딩 자료 자동 발송 — 이메일 및 슬랙 DM 전송 완료</div>
+              </div>
+              <div class="activity-item__right">
+                <span class="activity-item__time">2일 전 14:23</span>
+                <span class="status-badge status-badge--success"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>성공</span>
+              </div>
+            </div>
+
+            <div class="activity-item">
+              <div class="activity-item__icon">🔍</div>
+              <div class="activity-item__info">
+                <div class="activity-item__agent">경쟁사 뉴스 모니터링 에이전트</div>
+                <div class="activity-item__task">외부 API 연결 실패 — 재시도 3회 후 중단 (오류 코드: RATE_LIMIT_EXCEEDED)</div>
+              </div>
+              <div class="activity-item__right">
+                <span class="activity-item__time">3일 전 10:00</span>
+                <span class="status-badge status-badge--error"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>오류</span>
+              </div>
+            </div>
+
+            <div class="activity-item">
+              <div class="activity-item__icon">📋</div>
+              <div class="activity-item__info">
+                <div class="activity-item__agent">주간 보고서 요약 에이전트</div>
+                <div class="activity-item__task">2025년 15주차 주간 보고서 요약 완료 — 슬랙 #마케팅-보고 채널에 공유됨</div>
+              </div>
+              <div class="activity-item__right">
+                <span class="activity-item__time">4일 전 09:01</span>
+                <span class="status-badge status-badge--success"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>성공</span>
+              </div>
+            </div>
+
+            <div class="activity-item">
+              <div class="activity-item__icon">🧑‍💼</div>
+              <div class="activity-item__info">
+                <div class="activity-item__agent">신규 입사자 온보딩 안내 에이전트</div>
+                <div class="activity-item__task">이현우 님 온보딩 자료 자동 발송 — 이메일 및 슬랙 DM 전송 완료</div>
+              </div>
+              <div class="activity-item__right">
+                <span class="activity-item__time">5일 전 09:45</span>
+                <span class="status-badge status-badge--success"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>성공</span>
+              </div>
+            </div>
+
+            <div class="activity-item">
+              <div class="activity-item__icon">🔔</div>
+              <div class="activity-item__info">
+                <div class="activity-item__agent">슬랙 알림 정리 에이전트</div>
+                <div class="activity-item__task">42개 알림 분석 완료 — 긴급 5건, 일반 22건, 참고 15건으로 분류</div>
+              </div>
+              <div class="activity-item__right">
+                <span class="activity-item__time">5일 전 08:00</span>
+                <span class="status-badge status-badge--success"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>성공</span>
+              </div>
+            </div>
+
+            <div class="activity-item">
+              <div class="activity-item__icon">🔍</div>
+              <div class="activity-item__info">
+                <div class="activity-item__agent">경쟁사 뉴스 모니터링 에이전트</div>
+                <div class="activity-item__task">A사 신제품 출시 뉴스 감지 — 주요 내용 요약 후 #경쟁사-동향 채널에 공유</div>
+              </div>
+              <div class="activity-item__right">
+                <span class="activity-item__time">6일 전 10:00</span>
+                <span class="status-badge status-badge--success"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>성공</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div><!-- /tab-activity -->
+
+
+      <!-- ─────────────────────────────────────
+           TAB 3: 에이전트 탐색
+      ──────────────────────────────────────── -->
+      <div class="tab-panel" id="tab-explore" style="display:none">
+        <div class="tab-scroll">
+
+          <!-- Category chips -->
+          <div class="category-chips">
+            <button class="category-chip category-chip--active" onclick="filterExplore(this, '전체')">전체</button>
+            <button class="category-chip" onclick="filterExplore(this, '보고서/요약')">보고서/요약</button>
+            <button class="category-chip" onclick="filterExplore(this, '커뮤니케이션')">커뮤니케이션</button>
+            <button class="category-chip" onclick="filterExplore(this, '문서 분석')">문서 분석</button>
+            <button class="category-chip" onclick="filterExplore(this, '데이터 분석')">데이터 분석</button>
+            <button class="category-chip" onclick="filterExplore(this, '일정/알림')">일정/알림</button>
+            <button class="category-chip" onclick="filterExplore(this, 'HR/온보딩')">HR/온보딩</button>
+          </div>
+
+          <!-- Explore grid -->
+          <div class="explore-grid" id="exploreGrid">
+
+            <div class="explore-card" data-category="보고서/요약">
+              <div class="explore-card__header">
+                <span class="explore-card__icon">🗒️</span>
+                <button class="explore-card__add-btn" onclick="addExploreAgent(this, '회의록 자동 정리 에이전트', '보고서/요약')">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  추가
+                </button>
+              </div>
+              <div class="explore-card__name">회의록 자동 정리 에이전트</div>
+              <div class="explore-card__meta">
+                <span>보고서/요약</span>
+                <span class="explore-card__meta-dot"></span>
+                <span>사용 318명</span>
+              </div>
+              <div class="explore-card__desc">회의 종료 후 발화 내용을 자동으로 정리하고 결정사항·액션 아이템을 추출합니다.</div>
+            </div>
+
+            <div class="explore-card" data-category="커뮤니케이션">
+              <div class="explore-card__header">
+                <span class="explore-card__icon">✉️</span>
+                <button class="explore-card__add-btn" onclick="addExploreAgent(this, '이메일 초안 작성 에이전트', '커뮤니케이션')">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  추가
+                </button>
+              </div>
+              <div class="explore-card__name">이메일 초안 작성 에이전트</div>
+              <div class="explore-card__meta">
+                <span>커뮤니케이션</span>
+                <span class="explore-card__meta-dot"></span>
+                <span>사용 245명</span>
+              </div>
+              <div class="explore-card__desc">상황에 맞는 비즈니스 이메일 초안을 자동으로 작성하고 톤을 조정해 드립니다.</div>
+            </div>
+
+            <div class="explore-card" data-category="데이터 분석">
+              <div class="explore-card__header">
+                <span class="explore-card__icon">📰</span>
+                <button class="explore-card__add-btn" onclick="addExploreAgent(this, '일일 뉴스 브리핑 에이전트', '데이터 분석')">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  추가
+                </button>
+              </div>
+              <div class="explore-card__name">일일 뉴스 브리핑 에이전트</div>
+              <div class="explore-card__meta">
+                <span>데이터 분석</span>
+                <span class="explore-card__meta-dot"></span>
+                <span>사용 412명</span>
+              </div>
+              <div class="explore-card__desc">매일 아침 업계 뉴스를 수집·요약해 핵심 인사이트를 담은 브리핑을 제공합니다.</div>
+            </div>
+
+            <div class="explore-card" data-category="문서 분석">
+              <div class="explore-card__header">
+                <span class="explore-card__icon">📑</span>
+                <button class="explore-card__add-btn" onclick="addExploreAgent(this, '계약서 검토 에이전트', '문서 분석')">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  추가
+                </button>
+              </div>
+              <div class="explore-card__name">계약서 검토 에이전트</div>
+              <div class="explore-card__meta">
+                <span>문서 분석</span>
+                <span class="explore-card__meta-dot"></span>
+                <span>사용 187명</span>
+              </div>
+              <div class="explore-card__desc">계약서의 주요 조항, 리스크 항목, 누락 항목을 자동으로 식별하고 검토 의견을 제시합니다.</div>
+            </div>
+
+            <div class="explore-card" data-category="일정/알림">
+              <div class="explore-card__header">
+                <span class="explore-card__icon">🗓️</span>
+                <button class="explore-card__add-btn" onclick="addExploreAgent(this, '프로젝트 일정 알림 에이전트', '일정/알림')">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  추가
+                </button>
+              </div>
+              <div class="explore-card__name">프로젝트 일정 알림 에이전트</div>
+              <div class="explore-card__meta">
+                <span>일정/알림</span>
+                <span class="explore-card__meta-dot"></span>
+                <span>사용 293명</span>
+              </div>
+              <div class="explore-card__desc">프로젝트 마감일, 중간 점검일 D-7·D-3·D-1에 관련 팀원에게 자동 알림을 발송합니다.</div>
+            </div>
+
+            <div class="explore-card" data-category="커뮤니케이션">
+              <div class="explore-card__header">
+                <span class="explore-card__icon">🤝</span>
+                <button class="explore-card__add-btn" onclick="addExploreAgent(this, '고객 문의 분류 에이전트', '커뮤니케이션')">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  추가
+                </button>
+              </div>
+              <div class="explore-card__name">고객 문의 분류 에이전트</div>
+              <div class="explore-card__meta">
+                <span>커뮤니케이션</span>
+                <span class="explore-card__meta-dot"></span>
+                <span>사용 156명</span>
+              </div>
+              <div class="explore-card__desc">유입되는 고객 문의를 유형별로 자동 분류하고 담당 팀에 라우팅합니다.</div>
+            </div>
+
+            <div class="explore-card" data-category="데이터 분석">
+              <div class="explore-card__header">
+                <span class="explore-card__icon">📊</span>
+                <button class="explore-card__add-btn" onclick="addExploreAgent(this, '재무 데이터 시각화 에이전트', '데이터 분석')">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  추가
+                </button>
+              </div>
+              <div class="explore-card__name">재무 데이터 시각화 에이전트</div>
+              <div class="explore-card__meta">
+                <span>데이터 분석</span>
+                <span class="explore-card__meta-dot"></span>
+                <span>사용 98명</span>
+              </div>
+              <div class="explore-card__desc">엑셀·CSV 재무 데이터를 자동 분석하고 주요 지표를 차트와 요약 텍스트로 변환합니다.</div>
+            </div>
+
+            <div class="explore-card" data-category="문서 분석">
+              <div class="explore-card__header">
+                <span class="explore-card__icon">⚖️</span>
+                <button class="explore-card__add-btn" onclick="addExploreAgent(this, '법무 문서 요약 에이전트', '문서 분석')">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  추가
+                </button>
+              </div>
+              <div class="explore-card__name">법무 문서 요약 에이전트</div>
+              <div class="explore-card__meta">
+                <span>문서 분석</span>
+                <span class="explore-card__meta-dot"></span>
+                <span>사용 134명</span>
+              </div>
+              <div class="explore-card__desc">법률 문서의 핵심 조항, 의무사항, 제한사항을 비법률 전문가도 이해할 수 있게 요약합니다.</div>
+            </div>
+
+            <div class="explore-card" data-category="HR/온보딩">
+              <div class="explore-card__header">
+                <span class="explore-card__icon">📚</span>
+                <button class="explore-card__add-btn" onclick="addExploreAgent(this, '사내 교육 추천 에이전트', 'HR/온보딩')">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  추가
+                </button>
+              </div>
+              <div class="explore-card__name">사내 교육 추천 에이전트</div>
+              <div class="explore-card__meta">
+                <span>HR/온보딩</span>
+                <span class="explore-card__meta-dot"></span>
+                <span>사용 221명</span>
+              </div>
+              <div class="explore-card__desc">구성원의 역할과 역량 현황을 분석해 맞춤형 사내 교육 과정을 추천합니다.</div>
+            </div>
+
+          </div><!-- /explore-grid -->
+        </div>
+      </div><!-- /tab-explore -->
+
+    </div><!-- /main__body -->
+  </main>
+</div><!-- /app -->
+
+
+<!-- ══════════════════════════════════════════
+     MODAL: 에이전트 추가
+═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="agentModal" style="display:none" onclick="handleModalOverlayClick(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+
+    <div class="modal__header">
+      <span class="modal__title">에이전트 추가</span>
+      <button class="modal__close" onclick="closeAgentModal()" title="닫기">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal__body">
+      <form id="agentForm" onsubmit="submitAgentForm(event)">
+
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label form-label--required" for="agentName">에이전트 이름</label>
+            <input class="form-input" id="agentName" type="text" placeholder="예: 주간 보고서 요약 에이전트" required>
+          </div>
+          <div class="form-field">
+            <label class="form-label form-label--required" for="agentCategory">카테고리</label>
+            <select class="form-select" id="agentCategory" required>
+              <option value="">카테고리 선택</option>
+              <option value="보고서/요약">보고서/요약</option>
+              <option value="커뮤니케이션">커뮤니케이션</option>
+              <option value="문서 분석">문서 분석</option>
+              <option value="데이터 분석">데이터 분석</option>
+              <option value="일정/알림">일정/알림</option>
+              <option value="HR/온보딩">HR/온보딩</option>
+              <option value="기타">기타</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label form-label--required">공개 범위</label>
+          <div class="form-radio-group">
+            <label class="form-radio">
+              <input type="radio" name="visibility" value="private" checked>
+              나만 보기
+            </label>
+            <label class="form-radio">
+              <input type="radio" name="visibility" value="team">
+              우리 부서
+            </label>
+            <label class="form-radio">
+              <input type="radio" name="visibility" value="all">
+              전체 공개
+            </label>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="agentDesc">설명</label>
+          <textarea class="form-textarea" id="agentDesc" rows="2"
+            placeholder="이 에이전트가 어떤 일을 하는지 간략히 설명해주세요"></textarea>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label form-label--required" for="agentPrompt">시스템 프롬프트</label>
+          <textarea class="form-textarea form-textarea--prompt" id="agentPrompt" rows="6"
+            placeholder="당신은 [역할]입니다. 다음 작업을 수행하세요:&#10;1. ...&#10;2. ..." required></textarea>
+          <span class="form-hint">에이전트가 자율적으로 수행할 작업을 구체적으로 지시해 주세요.</span>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="modal__footer">
+      <button class="btn-secondary" onclick="closeAgentModal()">취소</button>
+      <button class="btn-primary" onclick="submitAgentForm()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        에이전트 추가
+      </button>
+    </div>
+
+  </div>
+</div><!-- /modal -->
+
+
+<script src="js/common.js"></script>
+<script>
+// ── Tab switching ─────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.agent-tab').forEach(t => {
+    t.classList.toggle('agent-tab--active', t.dataset.tab === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => {
+    p.style.display = p.id === 'tab-' + name ? 'flex' : 'none';
+  });
+}
+
+// ── Toggle (agent activate / deactivate) ─────────────────────────
+function handleToggle(checkbox, agentName, cardId) {
+  const card = document.getElementById(cardId);
+  if (card) card.classList.toggle('agent-card--inactive', !checkbox.checked);
+  showToast(agentName + (checkbox.checked ? ' 활성화됨' : ' 비활성화됨'));
+}
+
+// ── Agent card kebab menu ─────────────────────────────────────────
+function openAgentKebab(e, agentId) {
+  e.stopPropagation();
+  closeKebab();
+
+  const rect = e.currentTarget.getBoundingClientRect();
+  const menu = document.createElement('div');
+  menu.className = 'kebab-dropdown';
+  menu.id = 'kebabMenu';
+  menu.style.top  = rect.bottom + 4 + 'px';
+  menu.style.left = Math.max(rect.right - 160, 8) + 'px';
+
+  menu.innerHTML = `
+    <div class="kebab-option" onclick="closeKebab(); openAgentModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+      수정
+    </div>
+    <div class="kebab-option" onclick="closeKebab(); showToast('준비중입니다')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+      </svg>
+      복제
+    </div>
+    <div class="kebab-option kebab-option--danger" onclick="closeKebab(); deleteAgent(${agentId})">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+      </svg>
+      삭제
+    </div>
+  `;
+
+  document.body.appendChild(menu);
+  kebabOpen = true;
+  setTimeout(() => document.addEventListener('click', closeKebabOnOutside), 0);
+}
+
+function deleteAgent(id) {
+  const card = document.getElementById('agent-card-' + id);
+  if (card) {
+    card.style.transition = 'opacity 200ms, transform 200ms';
+    card.style.opacity = '0';
+    card.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+      card.remove();
+      updateAgentCount();
+    }, 200);
+  }
+}
+
+function updateAgentCount() {
+  const count = document.querySelectorAll('#agentGrid .agent-card').length;
+  const badge = document.getElementById('my-count');
+  if (badge) badge.textContent = count;
+}
+
+// ── Explore: category filter ──────────────────────────────────────
+function filterExplore(chip, category) {
+  document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('category-chip--active'));
+  chip.classList.add('category-chip--active');
+
+  document.querySelectorAll('.explore-card').forEach(card => {
+    const match = category === '전체' || card.dataset.category === category;
+    card.style.display = match ? '' : 'none';
+  });
+}
+
+// ── Explore: add agent → open modal pre-filled ───────────────────
+function addExploreAgent(btn, name, category) {
+  if (btn.classList.contains('explore-card__add-btn--added')) return;
+
+  document.getElementById('agentName').value     = name;
+  document.getElementById('agentCategory').value = category;
+  document.getElementById('agentPrompt').value   = '';
+
+  openAgentModal();
+}
+
+// ── Modal ─────────────────────────────────────────────────────────
+function openAgentModal() {
+  document.getElementById('agentModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('agentName').focus(), 100);
+}
+
+function closeAgentModal() {
+  document.getElementById('agentModal').style.display = 'none';
+  document.getElementById('agentForm').reset();
+}
+
+function handleModalOverlayClick(e) {
+  if (e.target === e.currentTarget) closeAgentModal();
+}
+
+function submitAgentForm() {
+  const name     = document.getElementById('agentName').value.trim();
+  const category = document.getElementById('agentCategory').value;
+  const prompt   = document.getElementById('agentPrompt').value.trim();
+
+  if (!name || !category || !prompt) {
+    showToast('필수 항목을 모두 입력해 주세요');
+    return;
+  }
+
+  // Add new card to grid
+  const grid = document.getElementById('agentGrid');
+  const emojis = { '보고서/요약':'📋', '커뮤니케이션':'💬', '문서 분석':'📄', '데이터 분석':'📊', '일정/알림':'🗓️', 'HR/온보딩':'🧑‍💼', '기타':'⚙️' };
+  const emoji = emojis[category] || '⚙️';
+  const newId = Date.now();
+
+  const card = document.createElement('div');
+  card.className = 'agent-card';
+  card.id = 'agent-card-' + newId;
+  card.style.opacity = '0';
+  card.style.transform = 'scale(0.96)';
+  card.style.transition = 'opacity 250ms, transform 250ms';
+
+  card.innerHTML = `
+    <div class="agent-card__body">
+      <div class="agent-card__header">
+        <div class="agent-card__title-row">
+          <span class="agent-card__emoji">${emoji}</span>
+          <span class="agent-card__name">${name}</span>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" class="toggle__input" checked
+            onchange="handleToggle(this, '${name}', 'agent-card-${newId}')">
+          <span class="toggle__track"><span class="toggle__thumb"></span></span>
+        </label>
+      </div>
+      <span class="agent-card__category">${category}</span>
+      <p class="agent-card__desc">${document.getElementById('agentDesc').value.trim() || '새로 추가된 에이전트입니다.'}</p>
+    </div>
+    <div class="agent-card__footer">
+      <span class="agent-card__last-run">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        아직 실행 전
+      </span>
+      <div class="agent-card__actions">
+        <button class="topbar__icon-btn" style="width:28px;height:28px" onclick="openAgentKebab(event, ${newId})">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+        </button>
+      </div>
+    </div>
+  `;
+
+  grid.appendChild(card);
+  requestAnimationFrame(() => { card.style.opacity = '1'; card.style.transform = 'scale(1)'; });
+
+  switchTab('my');
+  closeAgentModal();
+  updateAgentCount();
+  showToast(`'${name}' 에이전트가 추가되었습니다`);
+}
+
+// Esc key closes modal
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeAgentModal();
+});
+</script>
+</body>
+</html>

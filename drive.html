@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280">
+  <title>WorkAI — 드라이브</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ══════════════════════════════════════════
+       SIDEBAR
+  ═══════════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__header">
+      <a class="sidebar__logo" href="index.html">
+        <div class="sidebar__logo-icon">W</div>
+        <span class="sidebar__logo-text">WorkAI</span>
+      </a>
+      <button class="sidebar__toggle" id="sidebarToggle" title="메뉴 접기">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+    </div>
+
+    <nav class="sidebar__nav">
+      <ul class="nav-list">
+        <li class="nav-item">
+          <a href="index.html" class="nav-link">
+            <span class="nav-link__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg></span>
+            <span class="nav-link__label">홈</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="chat.html" class="nav-link">
+            <span class="nav-link__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg></span>
+            <span class="nav-link__label">대화</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="agent.html" class="nav-link">
+            <span class="nav-link__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><circle cx="8.5" cy="10" r="1.5"/><circle cx="15.5" cy="10" r="1.5"/><path d="M9.5 13.5s1 1 2.5 1 2.5-1 2.5-1"/></svg></span>
+            <span class="nav-link__label">에이전트</span>
+          </a>
+        </li>
+        <li class="nav-item nav-item--active">
+          <a href="drive.html" class="nav-link">
+            <span class="nav-link__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg></span>
+            <span class="nav-link__label">드라이브</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="#" class="nav-link" data-wip>
+            <span class="nav-link__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg></span>
+            <span class="nav-link__label">알림</span>
+            <span class="nav-link__badge">3</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar__snb">
+      <div class="snb-section" id="favorites-section" style="display:none">
+        <div class="snb-section__header">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span class="snb-section__header-text">즐겨찾기</span>
+        </div>
+        <ul class="recent-list" id="favorites-list"></ul>
+      </div>
+      <div class="snb-section">
+        <div class="snb-section__header">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span class="snb-section__header-text">최근 항목</span>
+        </div>
+        <ul class="recent-list">
+          <li><a class="recent-item" href="#" onclick="openFileViewer('2024_Q4_매출보고서.pdf','pdf','2.4MB','2025.04.25','홍길동','done'); return false;"><svg class="recent-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg><span class="recent-item__label">2024_Q4_매출보고서.pdf</span></a></li>
+          <li><a class="recent-item" href="chat.html"><svg class="recent-item__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg><span class="recent-item__label">2024년 4분기 매출 분석</span></a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sidebar__user">
+      <div class="user-profile">
+        <div class="user-avatar">홍</div>
+        <div class="user-info">
+          <span class="user-name">홍길동</span>
+          <span class="user-role">일반 사용자</span>
+        </div>
+      </div>
+      <button class="user-settings-btn" title="설정" data-wip>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+  </aside>
+
+
+  <!-- ══════════════════════════════════════════
+       MAIN
+  ═══════════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <div class="main__topbar">
+      <div class="topbar__left">
+        <span class="topbar__title">드라이브</span>
+        <span class="drive-topbar-info" id="topbarInfo">파일 5개 · 4.7MB</span>
+      </div>
+      <div class="topbar__right">
+        <button class="topbar__icon-btn" title="알림" data-wip>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          <span class="topbar__badge"></span>
+        </button>
+        <!-- Upload button (visible only when tab has files) -->
+        <button class="btn-primary" id="uploadBtn" onclick="triggerUpload()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
+          파일 업로드
+        </button>
+        <input type="file" id="fileInput" multiple style="display:none" onchange="handleFileSelect(this)">
+      </div>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="agent-tabbar">
+      <div class="agent-tabs">
+        <button class="agent-tab agent-tab--active" data-tab="personal" onclick="switchDriveTab('personal')">
+          개인 <span class="tab-count" id="count-personal">5</span>
+        </button>
+        <button class="agent-tab" data-tab="team" onclick="switchDriveTab('team')">
+          부서 <span class="tab-count" id="count-team">6</span>
+        </button>
+        <button class="agent-tab" data-tab="public" onclick="switchDriveTab('public')">
+          공용 <span class="tab-count" id="count-public">4</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab panels -->
+    <div class="main__body" style="flex-direction:column; overflow:hidden;">
+
+      <!-- ─────────────────────────────────────
+           TAB 1: 개인
+      ──────────────────────────────────────── -->
+      <div class="tab-panel tab-panel--active" id="tab-personal">
+        <div class="drive-table-wrap">
+          <table class="drive-table">
+            <thead>
+              <tr>
+                <th class="col-check"><input type="checkbox" onchange="toggleAll(this)"></th>
+                <th class="col-name">파일명 <span class="sort-icon">↕</span></th>
+                <th class="col-size">크기</th>
+                <th class="col-date">수정일 <span class="sort-icon">↕</span></th>
+                <th class="col-user">업로더</th>
+                <th class="col-rag">RAG 상태</th>
+                <th class="col-action"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr onclick="openFileViewer('2024_Q4_매출보고서.pdf','pdf','2.4MB','2025.04.25','홍길동','done')">
+                <td class="col-check" onclick="event.stopPropagation()"><input type="checkbox"></td>
+                <td class="col-name">
+                  <div class="drive-file-name">
+                    <span class="file-type-badge file-type-badge--pdf">PDF</span>
+                    <span class="drive-file-name__text">2024_Q4_매출보고서.pdf</span>
+                  </div>
+                </td>
+                <td>2.4 MB</td>
+                <td>2025.04.25</td>
+                <td><div class="drive-uploader"><div class="drive-uploader__avatar">홍</div>홍길동</div></td>
+                <td><span class="rag-badge rag-badge--done"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>색인 완료</span></td>
+                <td class="col-action" onclick="event.stopPropagation()">
+                  <button class="topbar__icon-btn" style="width:28px;height:28px" onclick="openDriveKebab(event,'2024_Q4_매출보고서.pdf')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                  </button>
+                </td>
+              </tr>
+              <tr onclick="openFileViewer('인사규정_v2.docx','docx','0.8MB','2025.04.20','홍길동','done')">
+                <td class="col-check" onclick="event.stopPropagation()"><input type="checkbox"></td>
+                <td class="col-name">
+                  <div class="drive-file-name">
+                    <span class="file-type-badge file-type-badge--docx">DOCX</span>
+                    <span class="drive-file-name__text">인사규정_v2.docx</span>
+                  </div>
+                </td>
+                <td>0.8 MB</td>
+                <td>2025.04.20</td>
+                <td><div class="drive-uploader"><div class="drive-uploader__avatar">홍</div>홍길동</div></td>
+                <td><span class="rag-badge rag-badge--done"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>색인 완료</span></td>
+                <td class="col-action" onclick="event.stopPropagation()">
+                  <button class="topbar__icon-btn" style="width:28px;height:28px" onclick="openDriveKebab(event,'인사규정_v2.docx')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                  </button>
+                </td>
+              </tr>
+              <tr onclick="openFileViewer('경쟁사분석_초안.pptx','pptx','5.1MB','2025.04.18','홍길동','indexing')">
+                <td class="col-check" onclick="event.stopPropagation()"><input type="checkbox"></td>
+                <td class="col-name">
+                  <div class="drive-file-name">
+                    <span class="file-type-badge file-type-badge--pptx">PPTX</span>
+                    <span class="drive-file-name__text">경쟁사분석_초안.pptx</span>
+                  </div>
+                </td>
+                <td>5.1 MB</td>
+                <td>2025.04.18</td>
+                <td><div class="drive-uploader"><div class="drive-uploader__avatar">홍</div>홍길동</div></td>
+                <td><span class="rag-badge rag-badge--indexing"><span class="rag-spin"></span>색인 중</span></td>
+                <td class="col-action" onclick="event.stopPropagation()">
+                  <button class="topbar__icon-btn" style="width:28px;height:28px" onclick="openDriveKebab(event,'경쟁사분석_초안.pptx')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                  </button>
+                </td>
+              </tr>
+              <tr onclick="openFileViewer('팀_OKR_2025Q2.xlsx','xlsx','1.2MB','2025.04.15','홍길동','done')">
+                <td class="col-check" onclick="event.stopPropagation()"><input type="checkbox"></td>
+                <td class="col-name">
+                  <div class="drive-file-name">
+                    <span class="file-type-badge file-type-badge--xlsx">XLSX</span>
+                    <span class="drive-file-name__text">팀_OKR_2025Q2.xlsx</span>
+                  </div>
+                </td>
+                <td>1.2 MB</td>
+                <td>2025.04.15</td>
+                <td><div class="drive-uploader"><div class="drive-uploader__avatar">홍</div>홍길동</div></td>
+                <td><span class="rag-badge rag-badge--done"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>색인 완료</span></td>
+                <td class="col-action" onclick="event.stopPropagation()">
+                  <button class="topbar__icon-btn" style="width:28px;height:28px" onclick="openDriveKebab(event,'팀_OKR_2025Q2.xlsx')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                  </button>
+                </td>
+              </tr>
+              <tr onclick="openFileViewer('온보딩_체크리스트.pdf','pdf','0.3MB','2025.04.10','홍길동','failed')">
+                <td class="col-check" onclick="event.stopPropagation()"><input type="checkbox"></td>
+                <td class="col-name">
+                  <div class="drive-file-name">
+                    <span class="file-type-badge file-type-badge--pdf">PDF</span>
+                    <span class="drive-file-name__text">온보딩_체크리스트.pdf</span>
+                  </div>
+                </td>
+                <td>0.3 MB</td>
+                <td>2025.04.10</td>
+                <td><div class="drive-uploader"><div class="drive-uploader__avatar">홍</div>홍길동</div></td>
+                <td><span class="rag-badge rag-badge--failed"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>색인 실패</span></td>
+                <td class="col-action" onclick="event.stopPropagation()">
+                  <button class="topbar__icon-btn" style="width:28px;height:28px" onclick="openDriveKebab(event,'온보딩_체크리스트.pdf')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ─────────────────────────────────────
+           TAB 2: 부서
+      ──────────────────────────────────────── -->
+      <div class="tab-panel" id="tab-team" style="display:none">
+        <div class="drive-table-wrap">
+          <table class="drive-table">
+            <thead>
+              <tr>
+                <th class="col-check"><input type="checkbox" onchange="toggleAll(this)"></th>
+                <th class="col-name">파일명 <span class="sort-icon">↕</span></th>
+                <th class="col-size">크기</th>
+                <th class="col-date">수정일 <span class="sort-icon">↕</span></th>
+                <th class="col-user">업로더</th>
+                <th class="col-rag">RAG 상태</th>
+                <th class="col-action"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr onclick="openFileViewer('마케팅팀_전략보고서_2025.pdf','pdf','3.6MB','2025.04.24','김지수','done')">
+                <td class="col-check" onclick="event.stopPropagation()"><input type="checkbox"></td>
+                <td class="col-name"><div class="drive-file-name"><span class="file-type-badge file-type-badge--pdf">PDF</span><span class="drive-file-name__text">마케팅팀_전략보고서_2025.pdf</span></div></td>
+                <td>3.6 MB</td><td>2025.04.24</td>
+                <td><div class="drive-uploader"><div class="drive-uploader__avatar" style="background:linear-gradient(135deg,#F59E0B,#D97706)">김</div>김지수</div></td>
+                <td><span class="rag-badge rag-badge--done"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>색인 완료</span></td>
+                <td class="col-action" onclick="event.stopPropagation()"><button class="topbar__icon-btn" style="width:28px;height:28px" onclick="openDriveKebab(event,'마케팅팀_전략보고서_2025.pdf')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></td>
+              </tr>
+              <tr onclick="openFileViewer('캠페인_성과분석_Q1.xlsx','xlsx','2.1MB','2025.04.22','박민준','done')">
+                <td class="col-check" onclick="event.stopPropagation()"><input type="checkbox"></td>
+                <td class="col-name"><div class="drive-file-name"><span class="file-type-badge file-type-badge--xlsx">XLSX</span><span class="drive-file-name__text">캠페인_성과분석_Q1.xlsx</span></div></td>
+                <td>2.1 MB</td><td>2025.04.22</td>
+                <td><div class="drive-uploader"><div class="drive-uploader__avatar" style="background:linear-gradient(135deg,#10B981,#059669)">박</div>박민준</div></td>
+                <td><span class="rag-badge rag-badge--done"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>색인 완료</span></td>
+                <td class="col-action" onclick="event.stopPropagation()"><button class="topbar__icon-btn" style="width:28px;height:28px" onclick="openDriveKebab(event,'캠페인_성과분석_Q1.xlsx')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></td>
+              </tr>
+              <tr onclick="openFileViewer('브랜드_가이드라인_v3.pdf','pdf','8.3MB','2025.04.19','이소연','indexing')">
+                <td class="col-check" onclick="event.stopPropagation()"><input type="checkbox"></td>
+                <td class="col-name"><div class="drive-file-name"><span class="file-type-badge file-type-badge--pdf">PDF</span><span class="drive-file-name__text">브랜드_가이드라인_v3.pdf</span></div></td>
+                <td>8.3 MB</td><td>2025.04.19</td>
+                <td><div class="drive-uploader"><div class="drive-uploader__avatar" style="background:linear-gradient(135deg,#8B5CF6,#6D28D9)">이</div>이소연</div></td>
+                <td><span class="rag-badge rag-badge--indexing"><span class="rag-spin"></span>색인 중</span></td>
+                <td class="col-action" onclick="event.stopPropagation()"><button class="topbar__icon-btn" style="width:28px;height:28px" onclick="openDriveKebab(event,'브랜드_가이드라인_v3.pdf')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></td>
+              </tr>
+              <tr onclick="openFileViewer('팀_회의록_4월.docx','docx','0.5MB','2025.04.18','홍길동','done')">
+                <td class="col-check" onclick="event.stopPropagation()"><input type="checkbox"></td>
+                <td class="col-name"><div class="drive-file-name"><span class="file-type-badge file-type-badge--docx">DOCX</span><span class="drive-file-name__text">팀_회의록_4월.docx</span></div></td>
+                <td>0.5 MB</td><td>2025.04.18</td>
+                <td><div class="drive-uploader"><div class="drive-uploader__avatar">홍</div>홍길동</div></td>
+                <td><span class="rag-badge rag-badge--done"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>색인 완료</span></td>
+                <td class="col-action" onclick="event.stopPropagation()"><button class="topbar__icon-btn" style="width:28px;height:28px" onclick="openDriveKebab(event,'팀_회의록_4월.docx')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></td>
+              </tr>
+              <tr onclick="openFileViewer('신제품_런칭_계획서.pptx','pptx','12.4MB','2025.04.15','김지수','done')">
+                <td class="col-check" onclick="event.stopPropagation()"><input type="checkbox"></td>
+                <td class="col-name"><div class="drive-file-name"><span class="file-type-badge file-type-badge--pptx">PPTX</span><span class="drive-file-name__text">신제품_런칭_계획서.pptx</span></div></td>
+                <td>12.4 MB</td><td>2025.04.15</td>
+                <td><div class="drive-uploader"><div class="drive-uploader__avatar" style="background:linear-gradient(135deg,#F59E0B,#D97706)">김</div>김지수</div></td>
+                <td><span class="rag-badge rag-badge--done"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>색인 완료</span></td>
+                <td class="col-action" onclick="event.stopPropagation()"><button class="topbar__icon-btn" style="width:28px;height:28px" onclick="openDriveKebab(event,'신제품_런칭_계획서.pptx')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></td>
+              </tr>
+              <tr onclick="openFileViewer('고객_인터뷰_분석.pdf','pdf','1.9MB','2025.04.10','박민준','done')">
+                <td class="col-check" onclick="event.stopPropagation()"><input type="checkbox"></td>
+                <td class="col-name"><div class="drive-file-name"><span class="file-type-badge file-type-badge--pdf">PDF</span><span class="drive-file-name__text">고객_인터뷰_분석.pdf</span></div></td>
+                <td>1.9 MB</td><td>2025.04.10</td>
+                <td><div class="drive-uploader"><div class="drive-uploader__avatar" style="background:linear-gradient(135deg,#10B981,#059669)">박</div>박민준</div></td>
+                <td><span class="rag-badge rag-badge--done"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>색인 완료</span></td>
+                <td class="col-action" onclick="event.stopPropagation()"><button class="topbar__icon-btn" style="width:28px;height:28px" onclick="openDriveKebab(event,'고객_인터뷰_분석.pdf')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ─────────────────────────────────────
+           TAB 3: 공용
+      ──────────────────────────────────────── -->
+      <div class="tab-panel" id="tab-public" style="display:none">
+        <div class="drive-table-wrap">
+          <table class="drive-table">
+            <thead>
+              <tr>
+                <th class="col-check"><input type="checkbox" onchange="toggleAll(this)"></th>
+                <th class="col-name">파일명 <span class="sort-icon">↕</span></th>
+                <th class="col-size">크기</th>
+                <th class="col-date">수정일 <span class="sort-icon">↕</span></th>
+                <th class="col-user">업로더</th>
+                <th class="col-rag">RAG 상태</th>
+                <th class="col-action"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr onclick="openFileViewer('인사규정_전사_2025.pdf','pdf','1.5MB','2025.03.01','인사팀','done')">
+                <td class="col-check" onclick="event.stopPropagation()"><input type="checkbox"></td>
+                <td class="col-name"><div class="drive-file-name"><span class="file-type-badge file-type-badge--pdf">PDF</span><span class="drive-file-name__text">인사규정_전사_2025.pdf</span></div></td>
+                <td>1.5 MB</td><td>2025.03.01</td>
+                <td><div class="drive-uploader"><div class="drive-uploader__avatar" style="background:linear-gradient(135deg,#EF4444,#DC2626)">인</div>인사팀</div></td>
+                <td><span class="rag-badge rag-badge--done"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>색인 완료</span></td>
+                <td class="col-action" onclick="event.stopPropagation()"><button class="topbar__icon-btn" style="width:28px;height:28px" onclick="openDriveKebab(event,'인사규정_전사_2025.pdf')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></td>
+              </tr>
+              <tr onclick="openFileViewer('보안정책_v4.pdf','pdf','0.7MB','2025.02.15','IT보안팀','done')">
+                <td class="col-check" onclick="event.stopPropagation()"><input type="checkbox"></td>
+                <td class="col-name"><div class="drive-file-name"><span class="file-type-badge file-type-badge--pdf">PDF</span><span class="drive-file-name__text">보안정책_v4.pdf</span></div></td>
+                <td>0.7 MB</td><td>2025.02.15</td>
+                <td><div class="drive-uploader"><div class="drive-uploader__avatar" style="background:linear-gradient(135deg,#3B82F6,#2563EB)">IT</div>IT보안팀</div></td>
+                <td><span class="rag-badge rag-badge--done"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>색인 완료</span></td>
+                <td class="col-action" onclick="event.stopPropagation()"><button class="topbar__icon-btn" style="width:28px;height:28px" onclick="openDriveKebab(event,'보안정책_v4.pdf')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></td>
+              </tr>
+              <tr onclick="openFileViewer('조직도_2025Q1.pptx','pptx','2.3MB','2025.01.10','경영지원팀','done')">
+                <td class="col-check" onclick="event.stopPropagation()"><input type="checkbox"></td>
+                <td class="col-name"><div class="drive-file-name"><span class="file-type-badge file-type-badge--pptx">PPTX</span><span class="drive-file-name__text">조직도_2025Q1.pptx</span></div></td>
+                <td>2.3 MB</td><td>2025.01.10</td>
+                <td><div class="drive-uploader"><div class="drive-uploader__avatar" style="background:linear-gradient(135deg,#6366F1,#4F46E5)">경</div>경영지원팀</div></td>
+                <td><span class="rag-badge rag-badge--done"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>색인 완료</span></td>
+                <td class="col-action" onclick="event.stopPropagation()"><button class="topbar__icon-btn" style="width:28px;height:28px" onclick="openDriveKebab(event,'조직도_2025Q1.pptx')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></td>
+              </tr>
+              <tr onclick="openFileViewer('복리후생_안내서.pdf','pdf','1.1MB','2025.01.05','인사팀','indexing')">
+                <td class="col-check" onclick="event.stopPropagation()"><input type="checkbox"></td>
+                <td class="col-name"><div class="drive-file-name"><span class="file-type-badge file-type-badge--pdf">PDF</span><span class="drive-file-name__text">복리후생_안내서.pdf</span></div></td>
+                <td>1.1 MB</td><td>2025.01.05</td>
+                <td><div class="drive-uploader"><div class="drive-uploader__avatar" style="background:linear-gradient(135deg,#EF4444,#DC2626)">인</div>인사팀</div></td>
+                <td><span class="rag-badge rag-badge--indexing"><span class="rag-spin"></span>색인 중</span></td>
+                <td class="col-action" onclick="event.stopPropagation()"><button class="topbar__icon-btn" style="width:28px;height:28px" onclick="openDriveKebab(event,'복리후생_안내서.pdf')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /main__body -->
+  </main>
+</div><!-- /app -->
+
+
+<!-- ══════════════════════════════════════════
+     MODAL: 파일 뷰어
+═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="fileViewerModal" style="display:none" onclick="handleViewerOverlayClick(event)">
+  <div class="modal file-viewer-modal" onclick="event.stopPropagation()">
+
+    <div class="modal__header">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0">
+        <span id="viewer-type-badge" class="file-type-badge file-type-badge--pdf">PDF</span>
+        <span class="modal__title" id="viewer-filename" style="font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">파일명.pdf</span>
+      </div>
+      <button class="modal__close" onclick="closeFileViewer()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Meta bar -->
+    <div class="file-viewer-meta">
+      <div class="file-viewer-meta__item">
+        <span class="file-viewer-meta__label">파일 크기</span>
+        <span class="file-viewer-meta__value" id="viewer-size">—</span>
+      </div>
+      <div class="file-viewer-meta__item">
+        <span class="file-viewer-meta__label">수정일</span>
+        <span class="file-viewer-meta__value" id="viewer-date">—</span>
+      </div>
+      <div class="file-viewer-meta__item">
+        <span class="file-viewer-meta__label">업로더</span>
+        <span class="file-viewer-meta__value" id="viewer-uploader">—</span>
+      </div>
+      <div class="file-viewer-meta__item">
+        <span class="file-viewer-meta__label">RAG 상태</span>
+        <span id="viewer-rag">—</span>
+      </div>
+    </div>
+
+    <!-- Preview body -->
+    <div class="file-viewer-body" id="viewer-body">
+      <!-- Injected by JS -->
+    </div>
+
+    <div class="modal__footer">
+      <button class="btn-secondary" onclick="closeFileViewer()">닫기</button>
+      <button class="btn-primary" onclick="showToast('다운로드를 시작합니다')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
+        다운로드
+      </button>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- Drop zone overlay (drag over window) -->
+<div id="dropOverlay" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(91,110,245,0.08);border:3px dashed var(--color-primary);pointer-events:none;border-radius:0">
+  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
+    <span style="font-size:18px;font-weight:700;color:var(--color-primary)">여기에 파일을 놓으세요</span>
+  </div>
+</div>
+
+
+<script src="js/common.js"></script>
+<script>
+// ── Tab switching ─────────────────────────────────────────────────
+const tabMeta = {
+  personal: { info: '파일 5개 · 4.7MB' },
+  team:     { info: '파일 6개 · 28.8MB' },
+  public:   { info: '파일 4개 · 5.6MB' },
+};
+
+function switchDriveTab(name) {
+  document.querySelectorAll('.agent-tab').forEach(t => {
+    t.classList.toggle('agent-tab--active', t.dataset.tab === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => {
+    p.style.display = p.id === 'tab-' + name ? 'flex' : 'none';
+  });
+  const info = document.getElementById('topbarInfo');
+  if (info) info.textContent = tabMeta[name]?.info || '';
+}
+
+// ── File viewer modal ──────────────────────────────────────────────
+const ragBadgeHtml = {
+  done:     '<span class="rag-badge rag-badge--done"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>색인 완료</span>',
+  indexing: '<span class="rag-badge rag-badge--indexing"><span class="rag-spin"></span>색인 중</span>',
+  failed:   '<span class="rag-badge rag-badge--failed"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>색인 실패</span>',
+};
+
+const previewContent = {
+  'pdf': `
+    <div class="doc-page" style="width:100%">
+      <div class="doc-page__title">문서 미리보기</div>
+      <div class="doc-page__subtitle">WorkAI 드라이브 · RAG 색인 완료</div>
+      <div class="doc-page__section">
+        <div class="doc-page__section-title">1. 개요</div>
+        <p class="doc-page__text">본 문서는 <span class="doc-page__highlight">2024년 4분기</span>의 주요 성과와 분석 내용을 담고 있습니다. 전체 매출은 전년 동기 대비 <span class="doc-page__highlight">18.3% 성장</span>하였으며 목표를 초과 달성하였습니다.</p>
+      </div>
+      <div class="doc-page__section">
+        <div class="doc-page__section-title">2. 주요 지표</div>
+        <table class="doc-page__table">
+          <thead><tr><th>항목</th><th>Q4 실적</th><th>목표</th><th>달성률</th></tr></thead>
+          <tbody>
+            <tr class="highlight-row"><td>총 매출</td><td>142억 원</td><td>133억 원</td><td>107%</td></tr>
+            <tr><td>영업이익률</td><td>22.8%</td><td>20.0%</td><td>114%</td></tr>
+            <tr><td>신규 계약</td><td>7건</td><td>5건</td><td>140%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="doc-page__section">
+        <div class="doc-page__section-title">3. 향후 계획</div>
+        <p class="doc-page__text">2025년 1분기에는 SMB 부문 리텐션 강화와 엔터프라이즈 파이프라인 확대에 집중할 예정입니다. 특히 온보딩 CS 강화 및 에이전트 자동화 도입을 통해 효율 개선을 목표로 합니다.</p>
+      </div>
+    </div>`,
+  'docx': `
+    <div class="doc-page" style="width:100%">
+      <div class="doc-page__title">문서 미리보기</div>
+      <div class="doc-page__subtitle">WorkAI 드라이브 · DOCX 형식</div>
+      <div class="doc-page__section">
+        <div class="doc-page__section-title">제1조 (목적)</div>
+        <p class="doc-page__text">본 규정은 회사 임직원의 인사 관리에 관한 기본 사항을 정함으로써 <span class="doc-page__highlight">합리적이고 공정한 인사 운영</span>을 목적으로 한다.</p>
+      </div>
+      <div class="doc-page__section">
+        <div class="doc-page__section-title">제2조 (적용 범위)</div>
+        <p class="doc-page__text">본 규정은 회사에 재직 중인 모든 정규직 임직원에게 적용한다. 단, 계약직 및 파견직 근로자에 대해서는 별도 규정을 따른다.</p>
+      </div>
+      <div class="doc-page__section">
+        <div class="doc-page__section-title">제5조 (근무 시간) <span style="background:#FEF3C7;padding:1px 6px;border-radius:3px;font-size:10px;color:#92400E">v2 변경</span></div>
+        <p class="doc-page__text"><span class="doc-page__highlight">주 40시간 유연근무제</span>를 기본으로 하며, 코어 타임(10:00~15:00) 내 의무 근무를 원칙으로 한다.</p>
+      </div>
+    </div>`,
+  'xlsx': `
+    <div class="doc-page" style="width:100%">
+      <div class="doc-page__title">스프레드시트 미리보기</div>
+      <div class="doc-page__subtitle">WorkAI 드라이브 · XLSX 형식</div>
+      <div class="doc-page__section">
+        <table class="doc-page__table">
+          <thead><tr><th>항목</th><th>Q1</th><th>Q2 (목표)</th><th>담당자</th></tr></thead>
+          <tbody>
+            <tr class="highlight-row"><td>매출 성장률</td><td>18.3%</td><td>22%</td><td>홍길동</td></tr>
+            <tr><td>신규 고객</td><td>43건</td><td>55건</td><td>김지수</td></tr>
+            <tr><td>리텐션율</td><td>87%</td><td>91%</td><td>박민준</td></tr>
+            <tr><td>NPS 점수</td><td>52</td><td>60</td><td>이소연</td></tr>
+            <tr><td>CAC</td><td>320만원</td><td>280만원</td><td>홍길동</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>`,
+  'pptx': `
+    <div class="doc-page" style="width:100%;min-height:260px;background:#1E293B;border-radius:8px;padding:32px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px">
+      <div style="font-size:13px;color:#94A3B8;font-weight:500;text-transform:uppercase;letter-spacing:1px">슬라이드 1 / 24</div>
+      <div style="font-size:22px;font-weight:700;color:#F1F5F9;text-align:center;letter-spacing:-0.3px">2025 신제품 런칭 전략</div>
+      <div style="font-size:14px;color:#64748B">마케팅팀 · 2025년 4월</div>
+      <div style="margin-top:16px;display:flex;gap:8px">
+        <div style="width:8px;height:8px;background:#5B6EF5;border-radius:50%"></div>
+        <div style="width:8px;height:8px;background:#334155;border-radius:50%"></div>
+        <div style="width:8px;height:8px;background:#334155;border-radius:50%"></div>
+      </div>
+    </div>`,
+};
+
+function openFileViewer(filename, type, size, date, uploader, ragStatus) {
+  const typeMap = { pdf: 'PDF', docx: 'DOCX', xlsx: 'XLSX', pptx: 'PPTX', csv: 'CSV' };
+  const badgeClass = 'file-type-badge file-type-badge--' + type;
+
+  document.getElementById('viewer-filename').textContent = filename;
+  document.getElementById('viewer-type-badge').className = badgeClass;
+  document.getElementById('viewer-type-badge').textContent = typeMap[type] || type.toUpperCase();
+  document.getElementById('viewer-size').textContent = size;
+  document.getElementById('viewer-date').textContent = date;
+  document.getElementById('viewer-uploader').textContent = uploader;
+  document.getElementById('viewer-rag').innerHTML = ragBadgeHtml[ragStatus] || '';
+  document.getElementById('viewer-body').innerHTML = previewContent[type] || '<div style="color:#fff;padding:40px;text-align:center">미리보기를 지원하지 않는 파일 형식입니다.</div>';
+
+  document.getElementById('fileViewerModal').style.display = 'flex';
+}
+
+function closeFileViewer() {
+  document.getElementById('fileViewerModal').style.display = 'none';
+}
+function handleViewerOverlayClick(e) {
+  if (e.target === e.currentTarget) closeFileViewer();
+}
+
+// ── Drive kebab ───────────────────────────────────────────────────
+function openDriveKebab(e, filename) {
+  e.stopPropagation();
+  closeKebab();
+
+  const rect = e.currentTarget.getBoundingClientRect();
+  const menu = document.createElement('div');
+  menu.className = 'kebab-dropdown';
+  menu.id = 'kebabMenu';
+  menu.style.top  = rect.bottom + 4 + 'px';
+  menu.style.left = Math.max(rect.right - 180, 8) + 'px';
+
+  menu.innerHTML = `
+    <div class="kebab-option" onclick="closeKebab(); showToast('다운로드를 시작합니다')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
+      다운로드
+    </div>
+    <div class="kebab-option" onclick="closeKebab(); showToast('준비중입니다')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      이름 바꾸기
+    </div>
+    <div class="kebab-option" onclick="closeKebab(); showToast('준비중입니다')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      공유
+    </div>
+    <div class="kebab-option kebab-option--danger" onclick="closeKebab(); showToast('준비중입니다')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+      삭제
+    </div>
+  `;
+  document.body.appendChild(menu);
+  kebabOpen = true;
+  setTimeout(() => document.addEventListener('click', closeKebabOnOutside), 0);
+}
+
+// ── Upload ────────────────────────────────────────────────────────
+function triggerUpload() {
+  document.getElementById('fileInput').click();
+}
+
+function handleFileSelect(input) {
+  if (!input.files.length) return;
+  const file = input.files[0];
+  const ext  = file.name.split('.').pop().toLowerCase();
+  const size  = (file.size / 1024 / 1024).toFixed(1) + ' MB';
+
+  // Add row to current active table
+  const activePanel = document.querySelector('.tab-panel.tab-panel--active, .tab-panel[style=""]');
+  const tbody = activePanel ? activePanel.querySelector('tbody') : null;
+  if (!tbody) { showToast('파일을 업로드했습니다'); input.value = ''; return; }
+
+  const typeClass = ['pdf','docx','xlsx','pptx','csv'].includes(ext) ? ext : 'pdf';
+  const typeLabel = ext.toUpperCase();
+
+  const tr = document.createElement('tr');
+  tr.style.opacity = '0';
+  tr.style.transition = 'opacity 300ms';
+  tr.onclick = () => openFileViewer(file.name, typeClass, size, '방금 전', '홍길동', 'indexing');
+  tr.innerHTML = `
+    <td class="col-check" onclick="event.stopPropagation()"><input type="checkbox"></td>
+    <td class="col-name"><div class="drive-file-name"><span class="file-type-badge file-type-badge--${typeClass}">${typeLabel}</span><span class="drive-file-name__text">${file.name}</span></div></td>
+    <td>${size}</td>
+    <td>방금 전</td>
+    <td><div class="drive-uploader"><div class="drive-uploader__avatar">홍</div>홍길동</div></td>
+    <td><span class="rag-badge rag-badge--indexing"><span class="rag-spin"></span>색인 중</span></td>
+    <td class="col-action" onclick="event.stopPropagation()">
+      <button class="topbar__icon-btn" style="width:28px;height:28px" onclick="openDriveKebab(event,'${file.name}')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+      </button>
+    </td>`;
+  tbody.prepend(tr);
+  requestAnimationFrame(() => { tr.style.opacity = '1'; });
+  showToast(`'${file.name}' 업로드 완료 — 색인 중`);
+  input.value = '';
+}
+
+// ── Drag & drop (window-level) ────────────────────────────────────
+let dragCounter = 0;
+window.addEventListener('dragenter', (e) => { dragCounter++; if (dragCounter === 1) document.getElementById('dropOverlay').style.display = ''; });
+window.addEventListener('dragleave', (e) => { dragCounter--; if (dragCounter <= 0) { dragCounter = 0; document.getElementById('dropOverlay').style.display = 'none'; } });
+window.addEventListener('dragover', (e) => e.preventDefault());
+window.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dragCounter = 0;
+  document.getElementById('dropOverlay').style.display = 'none';
+  const files = e.dataTransfer.files;
+  if (!files.length) return;
+  const fakeInput = { files };
+  handleFileSelect(fakeInput);
+});
+
+// ── Table checkbox ────────────────────────────────────────────────
+function toggleAll(master) {
+  const table = master.closest('table');
+  table.querySelectorAll('tbody input[type="checkbox"]').forEach(cb => cb.checked = master.checked);
+}
+
+// ── Esc closes viewer ─────────────────────────────────────────────
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeFileViewer();
+});
+</script>
+</body>
+</html>

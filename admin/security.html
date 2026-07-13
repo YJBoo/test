@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280">
+  <title>WorkAI 관리자 — 보안 설정</title>
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    /* ── Shared Admin Shell ── */
+    .admin-sidebar { width:var(--sidebar-width);min-width:var(--sidebar-width);background:var(--color-surface);border-right:1px solid var(--color-border);display:flex;flex-direction:column;height:100vh;flex-shrink:0; }
+    .admin-sidebar__header { padding:0 var(--space-md);height:56px;box-sizing:border-box;display:flex;align-items:center;gap:var(--space-sm);border-bottom:1px solid var(--color-border); }
+    .admin-logo { width:28px;height:28px;background:var(--color-primary);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0; }
+    .admin-sidebar__title { font-size:13.5px;font-weight:600;color:var(--color-text-primary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .admin-badge { font-size:10px;font-weight:600;background:#FEF3C7;color:#D97706;padding:2px 6px;border-radius:10px;flex-shrink:0; }
+    .admin-nav { flex:1;padding:var(--space-sm);overflow-y:auto; }
+    .admin-nav__list { list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:2px; }
+    .admin-nav__link { display:flex;align-items:center;gap:10px;padding:9px var(--space-sm);border-radius:var(--radius-sm);color:var(--color-text-secondary);text-decoration:none;font-size:13.5px;transition:background 0.15s,color 0.15s;cursor:pointer; }
+    .admin-nav__link:hover { background:var(--color-bg);color:var(--color-text-primary); }
+    .admin-nav__link--active { background:#EEF0FE;color:var(--color-primary);font-weight:500; }
+    .admin-sidebar__footer { padding:var(--space-sm) var(--space-md);border-top:1px solid var(--color-border); }
+    .admin-back-link { display:flex;align-items:center;gap:var(--space-sm);font-size:13px;color:var(--color-text-secondary);text-decoration:none;padding:8px var(--space-sm);border-radius:var(--radius-sm);transition:background 0.15s; }
+    .admin-back-link:hover { background:var(--color-bg);color:var(--color-text-primary); }
+    .admin-main { flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0; }
+    .admin-topbar { background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:0 var(--space-xl);display:flex;align-items:center;height:56px;flex-shrink:0;gap:var(--space-md); }
+    .admin-topbar__title { font-size:15px;font-weight:600;color:var(--color-text-primary);flex:1; }
+
+    /* ── Layout Toggle ── */
+    .layout-compare { display:flex;align-items:center;gap:var(--space-sm);flex-shrink:0; }
+    .layout-compare__label { font-size:12px;color:var(--color-text-secondary);white-space:nowrap; }
+    .lt-group { display:flex;border:1px solid var(--color-border);border-radius:var(--radius-sm);overflow:hidden; }
+    .lt-btn { padding:5px 12px;font-size:12px;font-weight:500;border:none;background:var(--color-surface);color:var(--color-text-secondary);cursor:pointer;transition:background 0.15s,color 0.15s; }
+    .lt-btn:hover { background:var(--color-bg); }
+    .lt-btn--active { background:var(--color-primary);color:#fff; }
+
+    /* ── Settings Layout ── */
+    .settings-wrapper { display:flex;flex:1;overflow:hidden; }
+    .settings-wrapper.layout-a .settings-nav { display:none; }
+    .settings-wrapper.layout-a .settings-body { overflow-y:auto;padding:var(--space-xl); }
+    .settings-wrapper.layout-a .settings-section { max-width:720px;margin:0 auto; }
+    .settings-wrapper.layout-b .settings-nav { display:flex;flex-direction:column;width:200px;flex-shrink:0;background:var(--color-surface);border-right:1px solid var(--color-border);padding:var(--space-md) var(--space-sm);overflow-y:auto; }
+    .settings-wrapper.layout-b .settings-body { overflow-y:auto;padding:var(--space-xl); }
+    .settings-wrapper.layout-b .settings-section { max-width:680px; }
+    .settings-nav { display:none; }
+    .snav-item { display:flex;align-items:center;gap:8px;padding:8px var(--space-sm);border-radius:var(--radius-sm);font-size:13px;color:var(--color-text-secondary);cursor:pointer;transition:background 0.15s,color 0.15s; }
+    .snav-item:hover { background:var(--color-bg);color:var(--color-text-primary); }
+    .snav-item--active { background:#EEF0FE;color:var(--color-primary);font-weight:500; }
+    .settings-body { flex:1; }
+    .settings-section { margin-bottom:var(--space-xl); }
+    .settings-section:last-child { margin-bottom:0; }
+    .section-heading { font-size:12px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:var(--space-md);padding-bottom:var(--space-sm);border-bottom:1px solid var(--color-border); }
+    .settings-wrapper.layout-a .section-heading { display:none; }
+    .settings-wrapper.layout-b .section-heading { display:block; }
+
+    /* ── Card ── */
+    .s-card { background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-md); }
+    .s-card:last-child { margin-bottom:0; }
+    .s-card__header { padding:var(--space-md) var(--space-lg);border-bottom:1px solid var(--color-border); }
+    .s-card__title { font-size:14px;font-weight:600;color:var(--color-text-primary); }
+    .s-card__desc { font-size:12px;color:var(--color-text-secondary);margin-top:2px; }
+    .s-card__body { padding:var(--space-lg); }
+    .s-card__footer { padding:var(--space-sm) var(--space-lg);background:var(--color-bg);border-top:1px solid var(--color-border);display:flex;justify-content:flex-end;gap:var(--space-sm); }
+
+    /* ── Setting Row ── */
+    .setting-row { display:flex;align-items:center;justify-content:space-between;padding:var(--space-md) 0;border-bottom:1px solid var(--color-border); }
+    .setting-row:last-child { border-bottom:none;padding-bottom:0; }
+    .setting-row:first-child { padding-top:0; }
+    .setting-row__left { flex:1;padding-right:var(--space-xl); }
+    .setting-row__label { font-size:14px;font-weight:500;color:var(--color-text-primary);display:flex;align-items:center;gap:var(--space-xs); }
+    .setting-row__hint { font-size:12px;color:var(--color-text-secondary);margin-top:2px; }
+
+    /* Toggle */
+    .toggle { position:relative;display:inline-flex;align-items:center;cursor:pointer; }
+    .toggle__input { position:absolute;opacity:0;width:0;height:0; }
+    .toggle__track { width:38px;height:22px;background:#D1D5DB;border-radius:11px;transition:background 0.2s;position:relative; }
+    .toggle__thumb { position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2); }
+    .toggle__input:checked + .toggle__track { background:var(--color-primary); }
+    .toggle__input:checked + .toggle__track .toggle__thumb { transform:translateX(16px); }
+
+    /* ── Tag Chip Input ── */
+    .tag-input-wrap {
+      display:flex;flex-wrap:wrap;gap:var(--space-xs);
+      padding:var(--space-sm) var(--space-sm);
+      border:1px solid var(--color-border);border-radius:var(--radius-sm);
+      cursor:text;min-height:44px;align-items:center;
+      background:var(--color-surface);transition:border-color 0.15s;
+    }
+    .tag-input-wrap:focus-within { border-color:var(--color-primary); }
+    .tag-chip {
+      display:inline-flex;align-items:center;gap:4px;
+      background:#FEE2E2;color:#DC2626;
+      font-size:13px;padding:3px 8px;border-radius:10px;
+      white-space:nowrap;
+    }
+    .tag-chip__remove { background:none;border:none;cursor:pointer;color:#DC2626;padding:0;font-size:14px;line-height:1;display:flex;align-items:center; }
+    .tag-input {
+      border:none;outline:none;font-size:13px;
+      color:var(--color-text-primary);flex:1;min-width:120px;
+      background:transparent;padding:2px 4px;
+    }
+    .tag-hint { font-size:12px;color:var(--color-text-secondary);margin-top:var(--space-xs); }
+    .tag-count { font-size:12px;color:var(--color-text-secondary);margin-top:var(--space-xs);text-align:right; }
+
+    /* ── Masking Checkboxes ── */
+    .mask-grid { display:grid;grid-template-columns:1fr 1fr;gap:var(--space-sm); }
+    .mask-item { display:flex;align-items:flex-start;gap:var(--space-sm);padding:var(--space-sm) var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-sm);cursor:pointer;transition:border-color 0.15s,background 0.15s; }
+    .mask-item:hover { border-color:#A5B4FC;background:#FAFBFF; }
+    .mask-item--checked { border-color:var(--color-primary);background:#F5F6FE; }
+    .mask-check { width:15px;height:15px;accent-color:var(--color-primary);flex-shrink:0;margin-top:1px;cursor:pointer; }
+    .mask-info { flex:1; }
+    .mask-label { font-size:13.5px;font-weight:500;color:var(--color-text-primary); }
+    .mask-desc { font-size:11px;color:var(--color-text-secondary);margin-top:2px; }
+    .mask-example { font-size:11px;color:var(--color-text-disabled);margin-top:3px;font-family:monospace; }
+
+    /* ── 2FA ── */
+    .tfa-grid { display:flex;flex-direction:column;gap:0; }
+    .tfa-level {
+      display:flex;align-items:center;padding:var(--space-md) 0;
+      border-bottom:1px solid var(--color-border);gap:var(--space-md);
+    }
+    .tfa-level:last-child { border-bottom:none;padding-bottom:0; }
+    .tfa-level:first-child { padding-top:0; }
+    .tfa-level__icon { width:36px;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+    .tfa-level__icon--red { background:#FEE2E2; color:#DC2626; }
+    .tfa-level__icon--yellow { background:#FEF3C7; color:#D97706; }
+    .tfa-level__icon--gray { background:var(--color-bg); color:var(--color-text-secondary); }
+    .tfa-level__info { flex:1; }
+    .tfa-level__title { font-size:14px;font-weight:500;color:var(--color-text-primary);display:flex;align-items:center;gap:var(--space-xs); }
+    .tfa-level__desc { font-size:12px;color:var(--color-text-secondary);margin-top:2px; }
+    .tfa-badge { font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px; }
+    .tfa-badge--force { background:#FEE2E2;color:#DC2626; }
+    .tfa-badge--recommend { background:#FEF3C7;color:#D97706; }
+    .tfa-badge--optional { background:var(--color-bg);color:var(--color-text-secondary); }
+
+    /* ── Access Control Matrix ── */
+    .acl-table { width:100%;border-collapse:collapse;font-size:13.5px; }
+    .acl-table th { padding:10px var(--space-md);text-align:left;font-size:12px;font-weight:600;color:var(--color-text-secondary);background:var(--color-bg);border-bottom:1px solid var(--color-border);white-space:nowrap; }
+    .acl-table th:not(:first-child) { text-align:center;width:120px; }
+    .acl-table td { padding:12px var(--space-md);border-bottom:1px solid var(--color-border);color:var(--color-text-primary); }
+    .acl-table tr:last-child td { border-bottom:none; }
+    .acl-table td:not(:first-child) { text-align:center; }
+    .acl-feature { font-weight:500; }
+    .acl-feature-desc { font-size:12px;color:var(--color-text-secondary); }
+    .acl-check { color:#10B981; }
+    .acl-lock { font-size:11px;color:var(--color-text-disabled);display:block;margin-top:2px; }
+    .acl-toggle { display:flex;align-items:center;justify-content:center; }
+
+    /* Danger zone */
+    .danger-zone { border:1px solid #FCA5A5;border-radius:var(--radius-md);overflow:hidden;margin-top:var(--space-xl); }
+    .danger-zone__header { padding:var(--space-md) var(--space-lg);background:#FFF5F5; }
+    .danger-zone__title { font-size:14px;font-weight:600;color:#DC2626;display:flex;align-items:center;gap:var(--space-xs); }
+    .danger-zone__body { padding:var(--space-lg); }
+    .danger-row { display:flex;align-items:center;justify-content:space-between;padding:var(--space-md) 0;border-bottom:1px solid #FEE2E2; }
+    .danger-row:last-child { border-bottom:none;padding-bottom:0; }
+    .danger-row:first-child { padding-top:0; }
+    .danger-row__label { font-size:14px;font-weight:500;color:var(--color-text-primary); }
+    .danger-row__desc { font-size:12px;color:var(--color-text-secondary);margin-top:2px; }
+    .btn-danger-outline { padding:7px 14px;border:1px solid #FCA5A5;background:none;color:#DC2626;border-radius:var(--radius-sm);font-size:13px;cursor:pointer; }
+    .btn-danger-outline:hover { background:#FEE2E2; }
+
+    /* Buttons */
+    .btn-primary { padding:8px 18px;background:var(--color-primary);color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;cursor:pointer; }
+    .btn-primary:hover { background:var(--color-primary-hover); }
+    .btn-secondary { padding:8px 14px;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-primary);border-radius:var(--radius-sm);font-size:13px;cursor:pointer; }
+    .btn-secondary:hover { background:var(--color-bg); }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ════ Admin Sidebar ════ -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar__header">
+      <div class="admin-logo">W</div>
+      <span class="admin-sidebar__title">워크에이아이</span>
+      <span class="admin-badge">관리자</span>
+    </div>
+    <nav class="admin-nav">
+      <ul class="admin-nav__list">
+        <li><a href="info.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>기본 정보</a></li>
+        <li><a href="#" class="admin-nav__link" data-wip>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>대시보드</a></li>
+        <li><a href="usage.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>토큰 사용량</a></li>
+        <li><a href="org.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>조직</a></li>
+        <li><a href="members.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>구성원</a></li>
+        <li><a href="ai-settings.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>AI 설정</a></li>
+        <li><a href="security.html" class="admin-nav__link admin-nav__link--active">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>보안 설정</a></li>
+        <li><a href="records.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>기록</a></li>
+      </ul>
+    </nav>
+    <div class="admin-sidebar__footer">
+      <a href="../index.html" class="admin-back-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        사용자 페이지로 이동
+      </a>
+    </div>
+  </aside>
+
+  <!-- ════ Admin Main ════ -->
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <span class="admin-topbar__title">보안 설정</span>
+      <div class="layout-compare">
+        <span class="layout-compare__label">레이아웃 비교</span>
+        <div class="lt-group">
+          <button class="lt-btn lt-btn--active" id="lt-a" onclick="setLayout('a')">A형 — 스크롤</button>
+          <button class="lt-btn" id="lt-b" onclick="setLayout('b')">B형 — 사이드 탭</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-wrapper layout-a" id="settingsWrapper">
+
+      <!-- Layout B nav -->
+      <div class="settings-nav" id="settingsNav">
+        <div class="snav-item snav-item--active" onclick="scrollToSection('sec-keyword',this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          금지어
+        </div>
+        <div class="snav-item" onclick="scrollToSection('sec-masking',this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          민감정보 마스킹
+        </div>
+        <div class="snav-item" onclick="scrollToSection('sec-2fa',this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          2단계 인증
+        </div>
+        <div class="snav-item" onclick="scrollToSection('sec-acl',this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          접근 제어
+        </div>
+      </div>
+
+      <!-- Settings Body -->
+      <div class="settings-body" id="settingsBody">
+
+        <!-- ── 금지어 ── -->
+        <div class="settings-section" id="sec-keyword">
+          <div class="section-heading">금지어</div>
+          <div class="s-card">
+            <div class="s-card__header">
+              <div>
+                <div class="s-card__title">금지어 설정</div>
+                <div class="s-card__desc">입력된 단어가 포함된 프롬프트는 AI에게 전달되지 않고 차단됩니다</div>
+              </div>
+            </div>
+            <div class="s-card__body">
+              <div class="tag-input-wrap" id="tagWrap" onclick="document.getElementById('tagInput').focus()">
+                <!-- chips injected by JS -->
+                <input type="text" class="tag-input" id="tagInput"
+                       placeholder="금지어 입력 후 Enter"
+                       onkeydown="handleTagKey(event)"
+                       onkeyup="updateTagCount()">
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:var(--space-xs)">
+                <span class="tag-hint">Enter 또는 쉼표(,)로 추가 · 칩 클릭 시 삭제</span>
+                <span class="tag-count" id="tagCount">0개</span>
+              </div>
+
+              <div style="margin-top:var(--space-md);padding:var(--space-md);background:var(--color-bg);border-radius:var(--radius-sm)">
+                <div style="font-size:12px;font-weight:600;color:var(--color-text-secondary);margin-bottom:var(--space-sm)">차단 동작 설정</div>
+                <div style="display:flex;flex-direction:column;gap:var(--space-sm)">
+                  <label style="display:flex;align-items:center;gap:var(--space-sm);cursor:pointer">
+                    <input type="radio" name="blockAction" value="block" checked style="accent-color:var(--color-primary)">
+                    <div>
+                      <div style="font-size:13.5px;color:var(--color-text-primary)">요청 차단 + 사용자에게 안내</div>
+                      <div style="font-size:12px;color:var(--color-text-secondary)">"해당 내용은 처리할 수 없습니다" 안내 메시지 표시</div>
+                    </div>
+                  </label>
+                  <label style="display:flex;align-items:center;gap:var(--space-sm);cursor:pointer">
+                    <input type="radio" name="blockAction" value="silent" style="accent-color:var(--color-primary)">
+                    <div>
+                      <div style="font-size:13.5px;color:var(--color-text-primary)">조용히 차단 (로그만 기록)</div>
+                      <div style="font-size:12px;color:var(--color-text-secondary)">사용자에게 안내 없이 차단, 관리자 기록에만 남김</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="s-card__footer">
+              <button class="btn-primary" onclick="saveKeywords()">저장</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 민감정보 마스킹 ── -->
+        <div class="settings-section" id="sec-masking">
+          <div class="section-heading">민감정보 마스킹</div>
+          <div class="s-card">
+            <div class="s-card__header">
+              <div>
+                <div class="s-card__title">민감정보 마스킹</div>
+                <div class="s-card__desc">선택한 유형의 정보는 AI 입력/출력에서 자동으로 마스킹 처리됩니다</div>
+              </div>
+              <label class="toggle" style="flex-shrink:0">
+                <input type="checkbox" class="toggle__input" id="maskMaster" checked onchange="toggleAllMask(this.checked)">
+                <div class="toggle__track"><div class="toggle__thumb"></div></div>
+              </label>
+            </div>
+            <div class="s-card__body" id="maskBody">
+              <div class="mask-grid">
+
+                <div class="mask-item mask-item--checked" onclick="toggleMaskItem(this)">
+                  <input type="checkbox" class="mask-check" checked>
+                  <div class="mask-info">
+                    <div class="mask-label">전화번호</div>
+                    <div class="mask-desc">휴대폰 및 일반 전화번호</div>
+                    <div class="mask-example">010-****-5678 → 010-XXXX-XXXX</div>
+                  </div>
+                </div>
+
+                <div class="mask-item mask-item--checked" onclick="toggleMaskItem(this)">
+                  <input type="checkbox" class="mask-check" checked>
+                  <div class="mask-info">
+                    <div class="mask-label">주민등록번호</div>
+                    <div class="mask-desc">13자리 주민등록번호</div>
+                    <div class="mask-example">900101-******* → 900101-XXXXXXX</div>
+                  </div>
+                </div>
+
+                <div class="mask-item mask-item--checked" onclick="toggleMaskItem(this)">
+                  <input type="checkbox" class="mask-check" checked>
+                  <div class="mask-info">
+                    <div class="mask-label">신용카드 번호</div>
+                    <div class="mask-desc">카드 16자리 번호</div>
+                    <div class="mask-example">1234-****-****-5678</div>
+                  </div>
+                </div>
+
+                <div class="mask-item" onclick="toggleMaskItem(this)">
+                  <input type="checkbox" class="mask-check">
+                  <div class="mask-info">
+                    <div class="mask-label">계좌번호</div>
+                    <div class="mask-desc">은행 계좌번호</div>
+                    <div class="mask-example">110-***-123456</div>
+                  </div>
+                </div>
+
+                <div class="mask-item" onclick="toggleMaskItem(this)">
+                  <input type="checkbox" class="mask-check">
+                  <div class="mask-info">
+                    <div class="mask-label">이메일 주소</div>
+                    <div class="mask-desc">사내 외 이메일 주소</div>
+                    <div class="mask-example">ho***@workai.co</div>
+                  </div>
+                </div>
+
+                <div class="mask-item" onclick="toggleMaskItem(this)">
+                  <input type="checkbox" class="mask-check">
+                  <div class="mask-info">
+                    <div class="mask-label">주소</div>
+                    <div class="mask-desc">상세 거주·직장 주소</div>
+                    <div class="mask-example">서울시 ** 구 ** 동 XXX</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+            <div class="s-card__footer">
+              <button class="btn-primary" onclick="saveMask()">저장</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 2단계 인증 ── -->
+        <div class="settings-section" id="sec-2fa">
+          <div class="section-heading">2단계 인증</div>
+          <div class="s-card">
+            <div class="s-card__header">
+              <div>
+                <div class="s-card__title">2단계 인증 (2FA)</div>
+                <div class="s-card__desc">역할에 따라 2단계 인증 필수 여부를 설정합니다</div>
+              </div>
+            </div>
+            <div class="s-card__body">
+              <div class="tfa-grid">
+
+                <div class="tfa-level">
+                  <div class="tfa-level__icon tfa-level__icon--red">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  </div>
+                  <div class="tfa-level__info">
+                    <div class="tfa-level__title">
+                      관리자
+                      <span class="tfa-badge tfa-badge--force">필수</span>
+                    </div>
+                    <div class="tfa-level__desc">관리자 계정은 항상 2FA가 필수입니다 (변경 불가)</div>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" class="toggle__input" checked disabled>
+                    <div class="toggle__track" style="opacity:0.6"><div class="toggle__thumb"></div></div>
+                  </label>
+                </div>
+
+                <div class="tfa-level">
+                  <div class="tfa-level__icon tfa-level__icon--yellow">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  </div>
+                  <div class="tfa-level__info">
+                    <div class="tfa-level__title">
+                      일반 사용자 — 필수 적용
+                      <span class="tfa-badge tfa-badge--force" id="userTfaBadge" style="display:none">필수</span>
+                      <span class="tfa-badge tfa-badge--optional" id="userTfaBadgeOpt">선택</span>
+                    </div>
+                    <div class="tfa-level__desc">활성화하면 모든 일반 사용자가 2FA 등록 후 로그인 가능</div>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" class="toggle__input" id="userTfaToggle" onchange="toggleUserTfa(this.checked)">
+                    <div class="toggle__track"><div class="toggle__thumb"></div></div>
+                  </label>
+                </div>
+
+                <div class="tfa-level">
+                  <div class="tfa-level__icon tfa-level__icon--gray">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  </div>
+                  <div class="tfa-level__info">
+                    <div class="tfa-level__title">신규 가입 시 2FA 등록 안내</div>
+                    <div class="tfa-level__desc">필수가 아니더라도 최초 로그인 시 2FA 설정을 권장하는 안내 표시</div>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" class="toggle__input" checked onchange="showToast('설정이 저장되었습니다')">
+                    <div class="toggle__track"><div class="toggle__thumb"></div></div>
+                  </label>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <div class="s-card">
+            <div class="s-card__header">
+              <div>
+                <div class="s-card__title">허용 인증 수단</div>
+                <div class="s-card__desc">사용자가 2FA에 사용할 수 있는 인증 방식</div>
+              </div>
+            </div>
+            <div class="s-card__body">
+              <div style="display:flex;flex-direction:column;gap:0">
+                <div class="setting-row">
+                  <div class="setting-row__left">
+                    <div class="setting-row__label">인증 앱 (TOTP)</div>
+                    <div class="setting-row__hint">Google Authenticator, Microsoft Authenticator 등</div>
+                  </div>
+                  <label class="toggle"><input type="checkbox" class="toggle__input" checked onchange="showToast('설정이 저장되었습니다')"><div class="toggle__track"><div class="toggle__thumb"></div></div></label>
+                </div>
+                <div class="setting-row">
+                  <div class="setting-row__left">
+                    <div class="setting-row__label">이메일 인증 코드</div>
+                    <div class="setting-row__hint">등록된 이메일로 6자리 코드 발송</div>
+                  </div>
+                  <label class="toggle"><input type="checkbox" class="toggle__input" checked onchange="showToast('설정이 저장되었습니다')"><div class="toggle__track"><div class="toggle__thumb"></div></div></label>
+                </div>
+                <div class="setting-row">
+                  <div class="setting-row__left">
+                    <div class="setting-row__label">SMS 인증 코드</div>
+                    <div class="setting-row__hint">등록된 휴대폰 번호로 6자리 코드 발송</div>
+                  </div>
+                  <label class="toggle"><input type="checkbox" class="toggle__input" onchange="showToast('설정이 저장되었습니다')"><div class="toggle__track"><div class="toggle__thumb"></div></div></label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 접근 제어 ── -->
+        <div class="settings-section" id="sec-acl">
+          <div class="section-heading">접근 제어</div>
+          <div class="s-card">
+            <div class="s-card__header">
+              <div>
+                <div class="s-card__title">기능별 접근 권한</div>
+                <div class="s-card__desc">역할(관리자·일반 사용자)에 따라 각 기능의 사용 가능 여부를 설정합니다</div>
+              </div>
+            </div>
+            <div class="s-card__body" style="padding:0">
+              <table class="acl-table">
+                <thead>
+                  <tr>
+                    <th>기능</th>
+                    <th>관리자</th>
+                    <th>일반 사용자</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div class="acl-feature">채팅</div>
+                      <div class="acl-feature-desc">AI와 1:1 대화</div>
+                    </td>
+                    <td><span class="acl-check">✓</span><span class="acl-lock">항상 허용</span></td>
+                    <td class="acl-toggle"><label class="toggle"><input type="checkbox" class="toggle__input" checked onchange="showToast('접근 권한이 변경되었습니다')"><div class="toggle__track"><div class="toggle__thumb"></div></div></label></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="acl-feature">에이전트 사용</div>
+                      <div class="acl-feature-desc">등록된 에이전트 실행</div>
+                    </td>
+                    <td><span class="acl-check">✓</span><span class="acl-lock">항상 허용</span></td>
+                    <td class="acl-toggle"><label class="toggle"><input type="checkbox" class="toggle__input" checked onchange="showToast('접근 권한이 변경되었습니다')"><div class="toggle__track"><div class="toggle__thumb"></div></div></label></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="acl-feature">에이전트 생성·편집</div>
+                      <div class="acl-feature-desc">새 에이전트 만들기 및 수정</div>
+                    </td>
+                    <td><span class="acl-check">✓</span><span class="acl-lock">항상 허용</span></td>
+                    <td class="acl-toggle"><label class="toggle"><input type="checkbox" class="toggle__input" checked onchange="showToast('접근 권한이 변경되었습니다')"><div class="toggle__track"><div class="toggle__thumb"></div></div></label></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="acl-feature">드라이브 — 개인 파일</div>
+                      <div class="acl-feature-desc">본인 파일 업로드·조회</div>
+                    </td>
+                    <td><span class="acl-check">✓</span><span class="acl-lock">항상 허용</span></td>
+                    <td class="acl-toggle"><label class="toggle"><input type="checkbox" class="toggle__input" checked onchange="showToast('접근 권한이 변경되었습니다')"><div class="toggle__track"><div class="toggle__thumb"></div></div></label></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="acl-feature">드라이브 — 부서 공유</div>
+                      <div class="acl-feature-desc">부서 드라이브에 파일 업로드</div>
+                    </td>
+                    <td><span class="acl-check">✓</span><span class="acl-lock">항상 허용</span></td>
+                    <td class="acl-toggle"><label class="toggle"><input type="checkbox" class="toggle__input" checked onchange="showToast('접근 권한이 변경되었습니다')"><div class="toggle__track"><div class="toggle__thumb"></div></div></label></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="acl-feature">드라이브 — 전사 공유</div>
+                      <div class="acl-feature-desc">전사 공용 드라이브에 업로드</div>
+                    </td>
+                    <td><span class="acl-check">✓</span><span class="acl-lock">항상 허용</span></td>
+                    <td class="acl-toggle"><label class="toggle"><input type="checkbox" class="toggle__input" onchange="showToast('접근 권한이 변경되었습니다')"><div class="toggle__track"><div class="toggle__thumb"></div></div></label></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="acl-feature">관리자 페이지</div>
+                      <div class="acl-feature-desc">조직·구성원·설정 관리</div>
+                    </td>
+                    <td><span class="acl-check">✓</span><span class="acl-lock">항상 허용</span></td>
+                    <td style="text-align:center"><span style="font-size:18px;color:var(--color-text-disabled)">—</span><span class="acl-lock">항상 차단</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Danger zone -->
+          <div class="danger-zone">
+            <div class="danger-zone__header">
+              <div class="danger-zone__title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                위험 구역
+              </div>
+            </div>
+            <div class="danger-zone__body">
+              <div class="danger-row">
+                <div>
+                  <div class="danger-row__label">전체 세션 강제 로그아웃</div>
+                  <div class="danger-row__desc">모든 사용자를 즉시 로그아웃 시킵니다. 보안 사고 발생 시 사용하세요.</div>
+                </div>
+                <button class="btn-danger-outline" onclick="confirmDanger('전체 세션 로그아웃')">실행</button>
+              </div>
+              <div class="danger-row">
+                <div>
+                  <div class="danger-row__label">IP 접근 제한 초기화</div>
+                  <div class="danger-row__desc">설정된 모든 IP 허용 목록을 초기화하고 전체 접근을 허용합니다.</div>
+                </div>
+                <button class="btn-danger-outline" onclick="confirmDanger('IP 접근 제한 초기화')">초기화</button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /sec-acl -->
+      </div><!-- /settings-body -->
+    </div><!-- /settings-wrapper -->
+  </main>
+</div>
+
+<div id="appToast" class="toast"></div>
+<script src="../js/common.js"></script>
+<script>
+// ── Layout toggle ──
+function setLayout(mode) {
+  document.getElementById('settingsWrapper').className = 'settings-wrapper layout-' + mode;
+  document.getElementById('lt-a').className = 'lt-btn' + (mode === 'a' ? ' lt-btn--active' : '');
+  document.getElementById('lt-b').className = 'lt-btn' + (mode === 'b' ? ' lt-btn--active' : '');
+}
+
+function scrollToSection(id, el) {
+  document.querySelectorAll('.snav-item').forEach(i => i.classList.remove('snav-item--active'));
+  el.classList.add('snav-item--active');
+  const target = document.getElementById(id);
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+document.getElementById('settingsBody').addEventListener('scroll', function() {
+  const sections = ['sec-keyword','sec-masking','sec-2fa','sec-acl'];
+  const navItems = document.querySelectorAll('.snav-item');
+  let active = 0;
+  sections.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el && el.getBoundingClientRect().top <= 100) active = i;
+  });
+  navItems.forEach((n, i) => n.classList.toggle('snav-item--active', i === active));
+});
+
+// ── Tag chip input ──
+let keywords = ['욕설', '경쟁사', '임금협상', '개인정보'];
+
+function renderChips() {
+  const wrap = document.getElementById('tagWrap');
+  // Remove existing chips
+  wrap.querySelectorAll('.tag-chip').forEach(c => c.remove());
+  // Insert before input
+  const input = document.getElementById('tagInput');
+  keywords.forEach(kw => {
+    const chip = document.createElement('div');
+    chip.className = 'tag-chip';
+    chip.innerHTML = `<span>${kw}</span><button class="tag-chip__remove" onclick="removeTag('${kw}')">×</button>`;
+    wrap.insertBefore(chip, input);
+  });
+  document.getElementById('tagCount').textContent = keywords.length + '개';
+}
+
+function handleTagKey(e) {
+  const input = document.getElementById('tagInput');
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const val = input.value.replace(/,/g, '').trim();
+    if (val && !keywords.includes(val)) { keywords.push(val); renderChips(); }
+    input.value = '';
+  } else if (e.key === 'Backspace' && input.value === '' && keywords.length > 0) {
+    keywords.pop(); renderChips();
+  }
+}
+
+function removeTag(kw) { keywords = keywords.filter(k => k !== kw); renderChips(); }
+function updateTagCount() {}
+function saveKeywords() { showToast(`금지어 ${keywords.length}개가 저장되었습니다`); }
+
+// ── Masking ──
+function toggleMaskItem(item) {
+  const cb = item.querySelector('.mask-check');
+  cb.checked = !cb.checked;
+  item.classList.toggle('mask-item--checked', cb.checked);
+}
+
+function toggleAllMask(on) {
+  document.querySelectorAll('.mask-item').forEach(item => {
+    const cb = item.querySelector('.mask-check');
+    cb.checked = on;
+    item.classList.toggle('mask-item--checked', on);
+  });
+  showToast(on ? '민감정보 마스킹이 활성화되었습니다' : '민감정보 마스킹이 비활성화되었습니다');
+}
+
+function saveMask() { showToast('민감정보 마스킹 설정이 저장되었습니다'); }
+
+// ── 2FA ──
+function toggleUserTfa(on) {
+  document.getElementById('userTfaBadge').style.display    = on  ? 'inline-block' : 'none';
+  document.getElementById('userTfaBadgeOpt').style.display = on  ? 'none' : 'inline-block';
+  showToast(on ? '일반 사용자 2FA 필수가 활성화되었습니다' : '일반 사용자 2FA가 선택으로 변경되었습니다');
+}
+
+// ── Danger ──
+function confirmDanger(label) {
+  if (confirm(`정말 "${label}"을 실행하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
+    showToast(`${label} 처리가 완료되었습니다`);
+  }
+}
+
+// ── Init ──
+renderChips();
+initWipLinks();
+</script>
+</body>
+</html>

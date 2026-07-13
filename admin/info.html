@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280">
+  <title>WorkAI 관리자 — 기본 정보</title>
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    /* ── Admin Shell ── */
+    .admin-sidebar{width:var(--sidebar-width);min-width:var(--sidebar-width);background:var(--color-surface);border-right:1px solid var(--color-border);display:flex;flex-direction:column;height:100vh;flex-shrink:0;}
+    .admin-sidebar__header{padding:0 var(--space-md);height:56px;box-sizing:border-box;display:flex;align-items:center;gap:var(--space-sm);border-bottom:1px solid var(--color-border);}
+    .admin-logo{width:28px;height:28px;background:var(--color-primary);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0;}
+    .admin-sidebar__title{font-size:13.5px;font-weight:600;color:var(--color-text-primary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .admin-badge{font-size:10px;font-weight:600;background:#FEF3C7;color:#D97706;padding:2px 6px;border-radius:10px;flex-shrink:0;}
+    .admin-nav{flex:1;padding:var(--space-sm);overflow-y:auto;}
+    .admin-nav__list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:2px;}
+    .admin-nav__link{display:flex;align-items:center;gap:10px;padding:9px var(--space-sm);border-radius:var(--radius-sm);color:var(--color-text-secondary);text-decoration:none;font-size:13.5px;transition:background 0.15s,color 0.15s;cursor:pointer;}
+    .admin-nav__link:hover{background:var(--color-bg);color:var(--color-text-primary);}
+    .admin-nav__link--active{background:#EEF0FE;color:var(--color-primary);font-weight:500;}
+    .admin-sidebar__footer{padding:var(--space-sm) var(--space-md);border-top:1px solid var(--color-border);}
+    .admin-back-link{display:flex;align-items:center;gap:var(--space-sm);font-size:13px;color:var(--color-text-secondary);text-decoration:none;padding:8px var(--space-sm);border-radius:var(--radius-sm);transition:background 0.15s;}
+    .admin-back-link:hover{background:var(--color-bg);color:var(--color-text-primary);}
+    .admin-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+    .admin-topbar{background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:0 var(--space-xl);display:flex;align-items:center;height:56px;flex-shrink:0;gap:var(--space-md);}
+    .admin-topbar__title{font-size:15px;font-weight:600;color:var(--color-text-primary);flex:1;}
+
+    /* ── Page ── */
+    .info-body{flex:1;overflow-y:auto;padding:var(--space-xl);}
+    .info-inner{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:var(--space-lg);}
+
+    /* ── Card ── */
+    .i-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;}
+    .i-card__header{padding:var(--space-md) var(--space-lg);border-bottom:1px solid var(--color-border);}
+    .i-card__title{font-size:14px;font-weight:600;color:var(--color-text-primary);}
+    .i-card__desc{font-size:12px;color:var(--color-text-secondary);margin-top:2px;}
+    .i-card__body{padding:var(--space-lg);}
+    .i-card__footer{padding:var(--space-sm) var(--space-lg);background:var(--color-bg);border-top:1px solid var(--color-border);display:flex;justify-content:flex-end;gap:var(--space-sm);}
+
+    /* ── Form ── */
+    .form-row{margin-bottom:var(--space-md);}
+    .form-row:last-child{margin-bottom:0;}
+    .form-label{display:block;font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px;}
+    .form-label span{color:var(--color-text-secondary);font-weight:400;}
+    .form-input{width:100%;box-sizing:border-box;padding:9px var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:14px;color:var(--color-text-primary);background:var(--color-surface);transition:border-color 0.15s;outline:none;}
+    .form-input:focus{border-color:var(--color-primary);}
+    .form-input:disabled{background:var(--color-bg);color:var(--color-text-secondary);}
+    .form-hint{font-size:12px;color:var(--color-text-secondary);margin-top:4px;}
+    .form-select{width:100%;box-sizing:border-box;padding:9px var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:14px;color:var(--color-text-primary);background:var(--color-surface);outline:none;cursor:pointer;}
+    .form-select:focus{border-color:var(--color-primary);}
+    .form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);}
+
+    /* ── Logo Upload ── */
+    .logo-area{display:flex;align-items:center;gap:var(--space-lg);}
+    .logo-preview{width:72px;height:72px;border-radius:var(--radius-md);border:2px solid var(--color-border);overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--color-primary);flex-shrink:0;cursor:pointer;transition:border-color 0.15s;}
+    .logo-preview:hover{border-color:var(--color-primary);}
+    .logo-preview img{width:100%;height:100%;object-fit:cover;display:none;}
+    .logo-preview-text{color:#fff;font-size:22px;font-weight:700;}
+    .logo-actions{display:flex;flex-direction:column;gap:var(--space-sm);}
+    .logo-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:13px;background:var(--color-surface);color:var(--color-text-primary);cursor:pointer;transition:background 0.15s;}
+    .logo-btn:hover{background:var(--color-bg);}
+    .logo-btn--danger{color:#DC2626;border-color:#FCA5A5;}
+    .logo-btn--danger:hover{background:#FEF2F2;}
+    .logo-hint{font-size:12px;color:var(--color-text-secondary);}
+    #logoInput{display:none;}
+
+    /* ── Favicon ── */
+    .favicon-area{display:flex;align-items:center;gap:var(--space-lg);}
+    .favicon-preview{width:40px;height:40px;border-radius:var(--radius-sm);border:2px solid var(--color-border);overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--color-primary);flex-shrink:0;cursor:pointer;}
+    .favicon-text{color:#fff;font-size:14px;font-weight:700;}
+
+    /* ── Buttons ── */
+    .btn{padding:8px 18px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:500;cursor:pointer;border:none;transition:background 0.15s;}
+    .btn-primary{background:var(--color-primary);color:#fff;}
+    .btn-primary:hover{background:var(--color-primary-hover);}
+    .btn-ghost{background:transparent;color:var(--color-text-secondary);border:1px solid var(--color-border);}
+    .btn-ghost:hover{background:var(--color-bg);}
+
+    /* ── Domain badge ── */
+    .domain-row{display:flex;align-items:center;gap:var(--space-sm);}
+    .domain-input{flex:1;padding:9px var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:14px;color:var(--color-text-primary);background:var(--color-surface);outline:none;}
+    .domain-input:focus{border-color:var(--color-primary);}
+    .domain-verify-btn{padding:9px 16px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:13px;font-weight:500;background:var(--color-surface);color:var(--color-text-primary);cursor:pointer;white-space:nowrap;transition:background 0.15s;}
+    .domain-verify-btn:hover{background:var(--color-bg);}
+    .domain-status{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:3px 8px;border-radius:8px;font-weight:500;}
+    .domain-status--ok{background:#DCFCE7;color:#16A34A;}
+    .domain-status--pending{background:#FEF3C7;color:#D97706;}
+
+    /* ── Danger ── */
+    .danger-zone{border:1px solid #FCA5A5;border-radius:var(--radius-md);overflow:hidden;}
+    .danger-zone__header{padding:var(--space-md) var(--space-lg);background:#FEF2F2;border-bottom:1px solid #FCA5A5;}
+    .danger-zone__title{font-size:14px;font-weight:600;color:#DC2626;}
+    .danger-zone__body{padding:var(--space-lg);display:flex;flex-direction:column;gap:var(--space-md);}
+    .danger-row{display:flex;align-items:center;justify-content:space-between;padding:var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-sm);}
+    .danger-row__info{}
+    .danger-row__label{font-size:14px;font-weight:500;color:var(--color-text-primary);}
+    .danger-row__desc{font-size:12px;color:var(--color-text-secondary);margin-top:2px;}
+    .btn-danger{padding:8px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;border:1px solid #FCA5A5;background:#FEF2F2;color:#DC2626;transition:background 0.15s;}
+    .btn-danger:hover{background:#FEE2E2;}
+  </style>
+</head>
+<body style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--color-bg);display:flex;height:100vh;overflow:hidden;">
+
+<aside class="admin-sidebar">
+  <div class="admin-sidebar__header">
+    <div class="admin-logo">W</div>
+    <span class="admin-sidebar__title">WorkAI 관리자</span>
+    <span class="admin-badge">ADMIN</span>
+  </div>
+  <nav class="admin-nav">
+    <ul class="admin-nav__list">
+      <li><a href="info.html" class="admin-nav__link admin-nav__link--active">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        기본 정보
+      </a></li>
+      <li><a href="#" class="admin-nav__link" data-wip>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        대시보드
+      </a></li>
+      <li><a href="usage.html" class="admin-nav__link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        토큰 사용량
+      </a></li>
+      <li><a href="org.html" class="admin-nav__link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="6" height="4"/><rect x="9" y="3" width="6" height="4"/><rect x="16" y="7" width="6" height="4"/><line x1="5" y1="11" x2="5" y2="18"/><line x1="12" y1="7" x2="12" y2="18"/><line x1="19" y1="11" x2="19" y2="18"/><line x1="5" y1="18" x2="19" y2="18"/></svg>
+        조직
+      </a></li>
+      <li><a href="members.html" class="admin-nav__link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        구성원
+      </a></li>
+      <li><a href="ai-settings.html" class="admin-nav__link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        AI 설정
+      </a></li>
+      <li><a href="security.html" class="admin-nav__link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        보안 설정
+      </a></li>
+      <li><a href="records.html" class="admin-nav__link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        기록
+      </a></li>
+    </ul>
+  </nav>
+  <div class="admin-sidebar__footer">
+    <a href="../index.html" class="admin-back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      사용자 페이지로 이동
+    </a>
+  </div>
+</aside>
+
+<div class="admin-main">
+  <div class="admin-topbar">
+    <span class="admin-topbar__title">기본 정보</span>
+    <button class="btn btn-primary" onclick="saveAll()">변경사항 저장</button>
+  </div>
+
+  <div class="info-body">
+    <div class="info-inner">
+
+      <!-- 워크스페이스 로고 -->
+      <div class="i-card">
+        <div class="i-card__header">
+          <div class="i-card__title">워크스페이스 로고</div>
+          <div class="i-card__desc">서비스 상단, 로그인 화면, 이메일 등에 표시됩니다.</div>
+        </div>
+        <div class="i-card__body">
+          <div class="logo-area">
+            <div class="logo-preview" id="logoPreview" onclick="document.getElementById('logoInput').click()">
+              <img id="logoImg" alt="로고">
+              <span class="logo-preview-text" id="logoText">W</span>
+            </div>
+            <div class="logo-actions">
+              <button class="logo-btn" onclick="document.getElementById('logoInput').click()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                이미지 업로드
+              </button>
+              <button class="logo-btn logo-btn--danger" id="logoRemoveBtn" onclick="removeLogo()" style="display:none">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                삭제
+              </button>
+              <p class="logo-hint">PNG, JPG · 권장 크기 256×256px · 최대 2MB</p>
+            </div>
+          </div>
+          <input type="file" id="logoInput" accept="image/*" onchange="handleLogo(this)">
+        </div>
+      </div>
+
+      <!-- 워크스페이스 기본 정보 -->
+      <div class="i-card">
+        <div class="i-card__header">
+          <div class="i-card__title">워크스페이스 정보</div>
+          <div class="i-card__desc">서비스 전반에 표시되는 조직 정보를 관리합니다.</div>
+        </div>
+        <div class="i-card__body">
+          <div class="form-row">
+            <label class="form-label">워크스페이스 이름 <span>(필수)</span></label>
+            <input type="text" class="form-input" id="wsName" value="워크에이아이" placeholder="회사/조직명 입력">
+            <p class="form-hint">사이드바 상단 및 초대 이메일에 표시됩니다.</p>
+          </div>
+          <div class="form-row-2">
+            <div class="form-row" style="margin-bottom:0">
+              <label class="form-label">업종</label>
+              <select class="form-select" id="industry">
+                <option>IT · 소프트웨어</option>
+                <option>제조</option>
+                <option>금융 · 보험</option>
+                <option>유통 · 물류</option>
+                <option>의료 · 바이오</option>
+                <option>교육</option>
+                <option>기타</option>
+              </select>
+            </div>
+            <div class="form-row" style="margin-bottom:0">
+              <label class="form-label">직원 규모</label>
+              <select class="form-select" id="size">
+                <option>1 ~ 10명</option>
+                <option>11 ~ 50명</option>
+                <option selected>51 ~ 200명</option>
+                <option>201 ~ 500명</option>
+                <option>500명 이상</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="i-card__footer">
+          <button class="btn btn-ghost" onclick="resetInfo()">취소</button>
+          <button class="btn btn-primary" onclick="saveInfo()">저장</button>
+        </div>
+      </div>
+
+      <!-- 도메인 -->
+      <div class="i-card">
+        <div class="i-card__header">
+          <div class="i-card__title">허용 도메인</div>
+          <div class="i-card__desc">해당 이메일 도메인 사용자만 워크스페이스에 가입할 수 있습니다.</div>
+        </div>
+        <div class="i-card__body">
+          <div class="form-row">
+            <label class="form-label">등록된 도메인</label>
+            <div style="display:flex;flex-direction:column;gap:var(--space-sm)" id="domainList">
+              <div class="domain-row">
+                <span style="padding:9px var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:14px;background:var(--color-bg);color:var(--color-text-primary);flex:1">workai.co.kr</span>
+                <span class="domain-status domain-status--ok">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  인증 완료
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="form-row" style="margin-bottom:0">
+            <label class="form-label">도메인 추가</label>
+            <div class="domain-row">
+              <input type="text" class="domain-input" id="domainInput" placeholder="예: company.com">
+              <button class="domain-verify-btn" onclick="addDomain()">추가 및 인증</button>
+            </div>
+            <p class="form-hint">도메인 소유권 인증 후 사용 가능합니다. (DNS TXT 레코드 방식)</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 언어 및 시간대 -->
+      <div class="i-card">
+        <div class="i-card__header">
+          <div class="i-card__title">언어 및 시간대</div>
+          <div class="i-card__desc">워크스페이스 기본 언어와 시간대를 설정합니다.</div>
+        </div>
+        <div class="i-card__body">
+          <div class="form-row-2">
+            <div class="form-row" style="margin-bottom:0">
+              <label class="form-label">기본 언어</label>
+              <select class="form-select">
+                <option selected>한국어</option>
+                <option>English</option>
+                <option>日本語</option>
+              </select>
+            </div>
+            <div class="form-row" style="margin-bottom:0">
+              <label class="form-label">시간대</label>
+              <select class="form-select">
+                <option selected>Asia/Seoul (UTC+9)</option>
+                <option>Asia/Tokyo (UTC+9)</option>
+                <option>America/New_York (UTC-5)</option>
+                <option>Europe/London (UTC+0)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="i-card__footer">
+          <button class="btn btn-ghost" onclick="">취소</button>
+          <button class="btn btn-primary" onclick="showToast('언어 및 시간대가 저장되었습니다.')">저장</button>
+        </div>
+      </div>
+
+      <!-- 워크스페이스 삭제 -->
+      <div class="danger-zone">
+        <div class="danger-zone__header">
+          <div class="danger-zone__title">위험 구역</div>
+        </div>
+        <div class="danger-zone__body">
+          <div class="danger-row">
+            <div class="danger-row__info">
+              <div class="danger-row__label">워크스페이스 초기화</div>
+              <div class="danger-row__desc">모든 대화 기록, 에이전트, 드라이브 파일이 삭제됩니다. 되돌릴 수 없습니다.</div>
+            </div>
+            <button class="btn-danger" onclick="confirmReset()">초기화</button>
+          </div>
+          <div class="danger-row">
+            <div class="danger-row__info">
+              <div class="danger-row__label">워크스페이스 삭제</div>
+              <div class="danger-row__desc">계정과 모든 데이터가 영구 삭제됩니다. 이 작업은 복구할 수 없습니다.</div>
+            </div>
+            <button class="btn-danger" onclick="confirmDelete()">삭제</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function handleLogo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById('logoImg');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    document.getElementById('logoText').style.display = 'none';
+    document.getElementById('logoRemoveBtn').style.display = 'flex';
+    showToast('로고가 업로드되었습니다.');
+  };
+  reader.readAsDataURL(file);
+}
+function removeLogo() {
+  document.getElementById('logoImg').style.display = 'none';
+  document.getElementById('logoImg').src = '';
+  document.getElementById('logoText').style.display = 'block';
+  document.getElementById('logoRemoveBtn').style.display = 'none';
+  document.getElementById('logoInput').value = '';
+  showToast('로고가 삭제되었습니다.');
+}
+function saveInfo() {
+  const name = document.getElementById('wsName').value.trim();
+  if (!name) { showToast('워크스페이스 이름을 입력해주세요.'); return; }
+  document.querySelector('.admin-sidebar__title').textContent = name;
+  showToast('기본 정보가 저장되었습니다.');
+}
+function resetInfo() {
+  document.getElementById('wsName').value = '워크에이아이';
+}
+function addDomain() {
+  const val = document.getElementById('domainInput').value.trim();
+  if (!val || !val.includes('.')) { showToast('올바른 도메인을 입력해주세요.'); return; }
+  const list = document.getElementById('domainList');
+  const row = document.createElement('div');
+  row.className = 'domain-row';
+  row.innerHTML = `
+    <span style="padding:9px var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:14px;background:var(--color-bg);color:var(--color-text-primary);flex:1">${val}</span>
+    <span class="domain-status domain-status--pending">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      인증 대기
+    </span>`;
+  list.appendChild(row);
+  document.getElementById('domainInput').value = '';
+  showToast(`${val} 도메인 인증 요청이 전송되었습니다.`);
+}
+function saveAll() { saveInfo(); }
+function confirmReset() {
+  if (confirm('모든 데이터가 삭제됩니다. 정말 초기화하시겠습니까?')) showToast('초기화 요청이 접수되었습니다.');
+}
+function confirmDelete() {
+  if (confirm('워크스페이스가 영구 삭제됩니다. 계속하시겠습니까?')) showToast('삭제 요청이 접수되었습니다.');
+}
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1F2937;color:#fff;padding:10px 20px;border-radius:8px;font-size:13.5px;z-index:9999;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,0.2);transition:opacity 0.3s;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2000);
+}
+</script>
+</body>
+</html>

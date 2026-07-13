@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280">
+  <title>WorkAI 관리자 — AI 설정</title>
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    /* ── Shared Admin Shell ── */
+    .admin-sidebar { width:var(--sidebar-width);min-width:var(--sidebar-width);background:var(--color-surface);border-right:1px solid var(--color-border);display:flex;flex-direction:column;height:100vh;flex-shrink:0; }
+    .admin-sidebar__header { padding:0 var(--space-md);height:56px;box-sizing:border-box;display:flex;align-items:center;gap:var(--space-sm);border-bottom:1px solid var(--color-border); }
+    .admin-logo { width:28px;height:28px;background:var(--color-primary);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0; }
+    .admin-sidebar__title { font-size:13.5px;font-weight:600;color:var(--color-text-primary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .admin-badge { font-size:10px;font-weight:600;background:#FEF3C7;color:#D97706;padding:2px 6px;border-radius:10px;flex-shrink:0; }
+    .admin-nav { flex:1;padding:var(--space-sm);overflow-y:auto; }
+    .admin-nav__list { list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:2px; }
+    .admin-nav__link { display:flex;align-items:center;gap:10px;padding:9px var(--space-sm);border-radius:var(--radius-sm);color:var(--color-text-secondary);text-decoration:none;font-size:13.5px;transition:background 0.15s,color 0.15s;cursor:pointer; }
+    .admin-nav__link:hover { background:var(--color-bg);color:var(--color-text-primary); }
+    .admin-nav__link--active { background:#EEF0FE;color:var(--color-primary);font-weight:500; }
+    .admin-sidebar__footer { padding:var(--space-sm) var(--space-md);border-top:1px solid var(--color-border); }
+    .admin-back-link { display:flex;align-items:center;gap:var(--space-sm);font-size:13px;color:var(--color-text-secondary);text-decoration:none;padding:8px var(--space-sm);border-radius:var(--radius-sm);transition:background 0.15s; }
+    .admin-back-link:hover { background:var(--color-bg);color:var(--color-text-primary); }
+    .admin-main { flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0; }
+    .admin-topbar { background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:0 var(--space-xl);display:flex;align-items:center;height:56px;flex-shrink:0;gap:var(--space-md); }
+    .admin-topbar__title { font-size:15px;font-weight:600;color:var(--color-text-primary);flex:1; }
+
+    /* ── Layout Toggle ── */
+    .layout-compare { display:flex;align-items:center;gap:var(--space-sm);flex-shrink:0; }
+    .layout-compare__label { font-size:12px;color:var(--color-text-secondary);white-space:nowrap; }
+    .lt-group { display:flex;border:1px solid var(--color-border);border-radius:var(--radius-sm);overflow:hidden; }
+    .lt-btn { padding:5px 12px;font-size:12px;font-weight:500;border:none;background:var(--color-surface);color:var(--color-text-secondary);cursor:pointer;transition:background 0.15s,color 0.15s; }
+    .lt-btn:hover { background:var(--color-bg); }
+    .lt-btn--active { background:var(--color-primary);color:#fff; }
+
+    /* ── Settings Wrapper ── */
+    .settings-wrapper { display:flex;flex:1;overflow:hidden; }
+
+    /* Layout A: stacked scroll */
+    .settings-wrapper.layout-a .settings-nav { display:none; }
+    .settings-wrapper.layout-a .settings-body { overflow-y:auto;padding:var(--space-xl); }
+    .settings-wrapper.layout-a .settings-section { max-width:720px;margin:0 auto; }
+
+    /* Layout B: sidebar nav */
+    .settings-wrapper.layout-b .settings-nav { display:flex;flex-direction:column;width:200px;flex-shrink:0;background:var(--color-surface);border-right:1px solid var(--color-border);padding:var(--space-md) var(--space-sm);overflow-y:auto; }
+    .settings-wrapper.layout-b .settings-body { overflow-y:auto;padding:var(--space-xl); }
+    .settings-wrapper.layout-b .settings-section { max-width:680px; }
+
+    /* Settings nav items */
+    .settings-nav { display:none; }
+    .snav-item { display:flex;align-items:center;gap:8px;padding:8px var(--space-sm);border-radius:var(--radius-sm);font-size:13px;color:var(--color-text-secondary);cursor:pointer;transition:background 0.15s,color 0.15s; }
+    .snav-item:hover { background:var(--color-bg);color:var(--color-text-primary); }
+    .snav-item--active { background:#EEF0FE;color:var(--color-primary);font-weight:500; }
+
+    /* Settings body */
+    .settings-body { flex:1; }
+    .settings-section { margin-bottom:var(--space-xl); }
+    .settings-section:last-child { margin-bottom:0; }
+
+    /* Settings Card */
+    .s-card { background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;margin-bottom:var(--space-md); }
+    .s-card:last-child { margin-bottom:0; }
+    .s-card__header { padding:var(--space-md) var(--space-lg);border-bottom:1px solid var(--color-border);display:flex;align-items:center;justify-content:space-between; }
+    .s-card__title { font-size:14px;font-weight:600;color:var(--color-text-primary); }
+    .s-card__desc { font-size:12px;color:var(--color-text-secondary);margin-top:2px; }
+    .s-card__body { padding:var(--space-lg); }
+    .s-card__footer { padding:var(--space-sm) var(--space-lg);background:var(--color-bg);border-top:1px solid var(--color-border);display:flex;justify-content:flex-end; }
+
+    /* Section heading (in B layout, visible above cards) */
+    .section-heading { font-size:12px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:var(--space-md);padding-bottom:var(--space-sm);border-bottom:1px solid var(--color-border); }
+    .settings-wrapper.layout-a .section-heading { display:none; }
+    .settings-wrapper.layout-b .section-heading { display:block; }
+
+    /* ── Model Radio List ── */
+    .model-list { display:flex;flex-direction:column;gap:var(--space-sm); }
+    .model-row { display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md);border:2px solid var(--color-border);border-radius:var(--radius-sm);cursor:pointer;transition:border-color 0.15s,background 0.15s; }
+    .model-row:hover { border-color:#A5B4FC;background:#FAFBFF; }
+    .model-row--selected { border-color:var(--color-primary);background:#F5F6FE; }
+    .model-row__radio { width:16px;height:16px;accent-color:var(--color-primary);flex-shrink:0;cursor:pointer; }
+    .model-row__info { flex:1;min-width:0; }
+    .model-row__name { font-size:14px;font-weight:500;color:var(--color-text-primary);display:flex;align-items:center;gap:var(--space-xs); }
+    .model-row__desc { font-size:12px;color:var(--color-text-secondary);margin-top:2px; }
+    .model-recommended { font-size:10px;font-weight:600;background:#D1FAE5;color:#065F46;padding:2px 6px;border-radius:8px; }
+    .model-meta { display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0; }
+    .model-tag { font-size:11px;padding:2px 7px;border-radius:6px;white-space:nowrap; }
+    .model-tag--slow   { background:#FEE2E2;color:#991B1B; }
+    .model-tag--medium { background:#FEF3C7;color:#92400E; }
+    .model-tag--fast   { background:#D1FAE5;color:#065F46; }
+    .model-tag--cost-h { background:#FEE2E2;color:#991B1B; }
+    .model-tag--cost-m { background:#FEF3C7;color:#92400E; }
+    .model-tag--cost-l { background:#D1FAE5;color:#065F46; }
+
+    /* ── Response Settings ── */
+    .setting-row { display:flex;align-items:flex-start;justify-content:space-between;padding:var(--space-md) 0;border-bottom:1px solid var(--color-border); }
+    .setting-row:last-child { border-bottom:none;padding-bottom:0; }
+    .setting-row:first-child { padding-top:0; }
+    .setting-row__left { flex:1;min-width:0;padding-right:var(--space-xl); }
+    .setting-row__label { font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:2px; }
+    .setting-row__hint { font-size:12px;color:var(--color-text-secondary); }
+    .setting-row__right { flex-shrink:0; }
+
+    .seg-control { display:flex;border:1px solid var(--color-border);border-radius:var(--radius-sm);overflow:hidden; }
+    .seg-btn { padding:7px 12px;font-size:13px;border:none;background:var(--color-surface);color:var(--color-text-secondary);cursor:pointer;transition:background 0.15s,color 0.15s;white-space:nowrap; }
+    .seg-btn:hover { background:var(--color-bg); }
+    .seg-btn--active { background:var(--color-primary);color:#fff; }
+    .seg-btn + .seg-btn { border-left:1px solid var(--color-border); }
+
+    /* Toggle */
+    .toggle { position:relative;display:inline-flex;align-items:center;cursor:pointer; }
+    .toggle__input { position:absolute;opacity:0;width:0;height:0; }
+    .toggle__track { width:38px;height:22px;background:#D1D5DB;border-radius:11px;transition:background 0.2s;position:relative; }
+    .toggle__thumb { position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2); }
+    .toggle__input:checked + .toggle__track { background:var(--color-primary); }
+    .toggle__input:checked + .toggle__track .toggle__thumb { transform:translateX(16px); }
+
+    /* System prompt textarea */
+    .sys-prompt-textarea { width:100%;box-sizing:border-box;padding:var(--space-sm) var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;color:var(--color-text-primary);resize:vertical;min-height:100px;outline:none;line-height:1.5; }
+    .sys-prompt-textarea:focus { border-color:var(--color-primary); }
+    .sys-prompt-hint { font-size:12px;color:var(--color-text-secondary);margin-top:var(--space-xs); }
+
+    /* ── Usage Limits ── */
+    .limit-grid { display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md); }
+    .limit-item { background:var(--color-bg);border-radius:var(--radius-sm);padding:var(--space-md); }
+    .limit-item__label { font-size:12px;font-weight:600;color:var(--color-text-secondary);margin-bottom:var(--space-sm); }
+    .limit-input-row { display:flex;align-items:center;gap:var(--space-xs); }
+    .limit-input { width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:14px;text-align:right;outline:none; }
+    .limit-input:focus { border-color:var(--color-primary); }
+    .limit-unit { font-size:13px;color:var(--color-text-secondary);white-space:nowrap; }
+    .limit-hint { font-size:11px;color:var(--color-text-disabled);margin-top:4px; }
+
+    /* Slider for concurrent agents */
+    .slider-row { display:flex;align-items:center;gap:var(--space-md); }
+    .slider { flex:1;accent-color:var(--color-primary); }
+    .slider-val { font-size:16px;font-weight:700;color:var(--color-primary);min-width:28px;text-align:center; }
+
+    /* Buttons */
+    .btn-primary { padding:8px 18px;background:var(--color-primary);color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;cursor:pointer; }
+    .btn-primary:hover { background:var(--color-primary-hover); }
+    .btn-secondary { padding:8px 14px;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-primary);border-radius:var(--radius-sm);font-size:13px;cursor:pointer; }
+    .btn-secondary:hover { background:var(--color-bg); }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ════ Admin Sidebar ════ -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar__header">
+      <div class="admin-logo">W</div>
+      <span class="admin-sidebar__title">워크에이아이</span>
+      <span class="admin-badge">관리자</span>
+    </div>
+    <nav class="admin-nav">
+      <ul class="admin-nav__list">
+        <li><a href="info.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>기본 정보</a></li>
+        <li><a href="#" class="admin-nav__link" data-wip>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>대시보드</a></li>
+        <li><a href="usage.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>토큰 사용량</a></li>
+        <li><a href="org.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>조직</a></li>
+        <li><a href="members.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>구성원</a></li>
+        <li><a href="ai-settings.html" class="admin-nav__link admin-nav__link--active">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>AI 설정</a></li>
+        <li><a href="security.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>보안 설정</a></li>
+        <li><a href="records.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>기록</a></li>
+      </ul>
+    </nav>
+    <div class="admin-sidebar__footer">
+      <a href="../index.html" class="admin-back-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        사용자 페이지로 이동
+      </a>
+    </div>
+  </aside>
+
+  <!-- ════ Admin Main ════ -->
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <span class="admin-topbar__title">AI 설정</span>
+      <div class="layout-compare">
+        <span class="layout-compare__label">레이아웃 비교</span>
+        <div class="lt-group">
+          <button class="lt-btn lt-btn--active" id="lt-a" onclick="setLayout('a')">A형 — 스크롤</button>
+          <button class="lt-btn" id="lt-b" onclick="setLayout('b')">B형 — 사이드 탭</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Settings Wrapper ── -->
+    <div class="settings-wrapper layout-a" id="settingsWrapper">
+
+      <!-- Layout B: left nav -->
+      <div class="settings-nav" id="settingsNav">
+        <div class="snav-item snav-item--active" onclick="scrollToSection('sec-model',this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          AI 모델
+        </div>
+        <div class="snav-item" onclick="scrollToSection('sec-response',this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          응답 설정
+        </div>
+        <div class="snav-item" onclick="scrollToSection('sec-limits',this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          사용 제한
+        </div>
+      </div>
+
+      <!-- Settings Body -->
+      <div class="settings-body" id="settingsBody">
+
+        <!-- Section: AI 모델 -->
+        <div class="settings-section" id="sec-model">
+          <div class="section-heading">AI 모델</div>
+          <div class="s-card">
+            <div class="s-card__header">
+              <div>
+                <div class="s-card__title">AI 모델 선택</div>
+                <div class="s-card__desc">전사 공통으로 사용할 기본 AI 모델을 선택합니다</div>
+              </div>
+            </div>
+            <div class="s-card__body">
+              <div class="model-list">
+
+                <div class="model-row" onclick="selectModel(this,'opus')">
+                  <input type="radio" name="aiModel" class="model-row__radio" value="opus">
+                  <div class="model-row__info">
+                    <div class="model-row__name">Claude Opus 4.7</div>
+                    <div class="model-row__desc">최고 성능 · 복잡한 분석·추론·창의적 작업에 적합</div>
+                  </div>
+                  <div class="model-meta">
+                    <span class="model-tag model-tag--slow">응답 느림</span>
+                    <span class="model-tag model-tag--cost-h">비용 높음</span>
+                  </div>
+                </div>
+
+                <div class="model-row model-row--selected" onclick="selectModel(this,'sonnet')">
+                  <input type="radio" name="aiModel" class="model-row__radio" value="sonnet" checked>
+                  <div class="model-row__info">
+                    <div class="model-row__name">
+                      Claude Sonnet 4.6
+                      <span class="model-recommended">권장</span>
+                    </div>
+                    <div class="model-row__desc">성능과 속도의 균형 · 대부분의 업무에 최적</div>
+                  </div>
+                  <div class="model-meta">
+                    <span class="model-tag model-tag--medium">응답 보통</span>
+                    <span class="model-tag model-tag--cost-m">비용 보통</span>
+                  </div>
+                </div>
+
+                <div class="model-row" onclick="selectModel(this,'haiku')">
+                  <input type="radio" name="aiModel" class="model-row__radio" value="haiku">
+                  <div class="model-row__info">
+                    <div class="model-row__name">Claude Haiku 4.5</div>
+                    <div class="model-row__desc">빠른 응답 · 간단한 Q&A · 에이전트 자동화에 적합</div>
+                  </div>
+                  <div class="model-meta">
+                    <span class="model-tag model-tag--fast">응답 빠름</span>
+                    <span class="model-tag model-tag--cost-l">비용 낮음</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+            <div class="s-card__footer">
+              <button class="btn-primary" onclick="saveModel()">저장</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: 응답 설정 -->
+        <div class="settings-section" id="sec-response">
+          <div class="section-heading">응답 설정</div>
+          <div class="s-card">
+            <div class="s-card__header">
+              <div>
+                <div class="s-card__title">기본 응답 설정</div>
+                <div class="s-card__desc">전사 공통 응답 스타일을 설정합니다. 사용자가 개인 설정에서 재정의할 수 있습니다.</div>
+              </div>
+            </div>
+            <div class="s-card__body">
+
+              <div class="setting-row">
+                <div class="setting-row__left">
+                  <div class="setting-row__label">응답 언어</div>
+                  <div class="setting-row__hint">AI가 기본적으로 사용하는 언어</div>
+                </div>
+                <div class="setting-row__right">
+                  <div class="seg-control">
+                    <button class="seg-btn" onclick="setSeg(this,'lang')">항상 한국어</button>
+                    <button class="seg-btn seg-btn--active" onclick="setSeg(this,'lang')">입력 언어 자동</button>
+                    <button class="seg-btn" onclick="setSeg(this,'lang')">항상 영어</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="setting-row">
+                <div class="setting-row__left">
+                  <div class="setting-row__label">응답 스타일</div>
+                  <div class="setting-row__hint">답변의 기본 길이와 상세도</div>
+                </div>
+                <div class="setting-row__right">
+                  <div class="seg-control">
+                    <button class="seg-btn" onclick="setSeg(this,'style')">간결</button>
+                    <button class="seg-btn seg-btn--active" onclick="setSeg(this,'style')">균형</button>
+                    <button class="seg-btn" onclick="setSeg(this,'style')">상세</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="setting-row">
+                <div class="setting-row__left">
+                  <div class="setting-row__label">마크다운 형식 사용</div>
+                  <div class="setting-row__hint">제목, 표, 코드블록 등 서식 허용</div>
+                </div>
+                <div class="setting-row__right">
+                  <label class="toggle">
+                    <input type="checkbox" class="toggle__input" checked onchange="showToast('마크다운 설정이 저장되었습니다')">
+                    <div class="toggle__track"><div class="toggle__thumb"></div></div>
+                  </label>
+                </div>
+              </div>
+
+              <div class="setting-row">
+                <div class="setting-row__left">
+                  <div class="setting-row__label">RAG 문서 자동 참조</div>
+                  <div class="setting-row__hint">드라이브 문서를 답변 생성에 자동으로 활용</div>
+                </div>
+                <div class="setting-row__right">
+                  <label class="toggle">
+                    <input type="checkbox" class="toggle__input" checked onchange="showToast('RAG 설정이 저장되었습니다')">
+                    <div class="toggle__track"><div class="toggle__thumb"></div></div>
+                  </label>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="s-card">
+            <div class="s-card__header">
+              <div>
+                <div class="s-card__title">시스템 프롬프트</div>
+                <div class="s-card__desc">모든 대화에 공통으로 적용되는 지침. AI의 역할, 말투, 주의사항 등을 설정할 수 있습니다.</div>
+              </div>
+            </div>
+            <div class="s-card__body">
+              <textarea class="sys-prompt-textarea" id="sysPrompt" placeholder="예: 당신은 워크에이아이의 사내 AI 어시스턴트입니다. 항상 존댓말을 사용하고, 사내 정책에 맞는 답변을 제공하세요. 법적·의료적 조언은 제공하지 마세요.">당신은 워크에이아이의 사내 AI 어시스턴트입니다. 항상 한국어로 존댓말을 사용하세요. 사내 문서를 우선적으로 참조하여 답변하며, 확실하지 않은 정보는 그렇다고 명시해 주세요.</textarea>
+              <div class="sys-prompt-hint">최대 2,000자 · 현재 <span id="promptLen">82</span>자</div>
+            </div>
+            <div class="s-card__footer">
+              <button class="btn-secondary" onclick="document.getElementById('sysPrompt').value='';updatePromptLen()">초기화</button>
+              <button class="btn-primary" style="margin-left:8px" onclick="savePrompt()">저장</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: 사용 제한 -->
+        <div class="settings-section" id="sec-limits">
+          <div class="section-heading">사용 제한</div>
+          <div class="s-card">
+            <div class="s-card__header">
+              <div>
+                <div class="s-card__title">요청 및 토큰 한도</div>
+                <div class="s-card__desc">전사 기본값입니다. 부서별 한도는 조직 관리에서 별도 설정할 수 있습니다.</div>
+              </div>
+            </div>
+            <div class="s-card__body">
+              <div class="limit-grid">
+                <div class="limit-item">
+                  <div class="limit-item__label">사용자당 일별 요청 수</div>
+                  <div class="limit-input-row">
+                    <input type="text" class="limit-input" value="200" oninput="this.value=this.value.replace(/[^0-9]/g,'')" onblur="saveLimit(this,'일별 요청 수')">
+                    <span class="limit-unit">회</span>
+                  </div>
+                  <div class="limit-hint">비워두면 무제한</div>
+                </div>
+                <div class="limit-item">
+                  <div class="limit-item__label">사용자당 월별 토큰 한도</div>
+                  <div class="limit-input-row">
+                    <input type="text" class="limit-input" value="5,000,000" oninput="this.value=this.value.replace(/[^0-9,]/g,'')" onblur="saveLimit(this,'월별 토큰 한도')">
+                    <span class="limit-unit">토큰</span>
+                  </div>
+                  <div class="limit-hint">비워두면 무제한</div>
+                </div>
+                <div class="limit-item">
+                  <div class="limit-item__label">RAG 참조 문서 수 (응답당)</div>
+                  <div class="limit-input-row">
+                    <input type="text" class="limit-input" value="5" oninput="this.value=this.value.replace(/[^0-9]/g,'')" onblur="saveLimit(this,'RAG 참조 문서 수')">
+                    <span class="limit-unit">개</span>
+                  </div>
+                  <div class="limit-hint">1~20, 많을수록 정확하나 느림</div>
+                </div>
+                <div class="limit-item">
+                  <div class="limit-item__label">파일 업로드 최대 크기</div>
+                  <div class="limit-input-row">
+                    <input type="text" class="limit-input" value="50" oninput="this.value=this.value.replace(/[^0-9]/g,'')" onblur="saveLimit(this,'파일 최대 크기')">
+                    <span class="limit-unit">MB</span>
+                  </div>
+                  <div class="limit-hint">최대 200MB</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="s-card">
+            <div class="s-card__header">
+              <div>
+                <div class="s-card__title">동시 에이전트 실행 수</div>
+                <div class="s-card__desc">사용자 1명이 동시에 실행할 수 있는 에이전트 수 상한</div>
+              </div>
+            </div>
+            <div class="s-card__body">
+              <div class="slider-row">
+                <span style="font-size:13px;color:var(--color-text-secondary)">1</span>
+                <input type="range" class="slider" min="1" max="10" value="3" id="agentSlider" oninput="document.getElementById('sliderVal').textContent=this.value">
+                <span style="font-size:13px;color:var(--color-text-secondary)">10</span>
+                <span class="slider-val" id="sliderVal">3</span>
+                <span style="font-size:13px;color:var(--color-text-secondary)">개</span>
+              </div>
+            </div>
+            <div class="s-card__footer">
+              <button class="btn-primary" onclick="saveAgentLimit()">저장</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /settings-body -->
+    </div><!-- /settings-wrapper -->
+  </main>
+</div>
+
+<div id="appToast" class="toast"></div>
+<script src="../js/common.js"></script>
+<script>
+// ── Layout toggle ──
+function setLayout(mode) {
+  document.getElementById('settingsWrapper').className = 'settings-wrapper layout-' + mode;
+  document.getElementById('lt-a').className = 'lt-btn' + (mode === 'a' ? ' lt-btn--active' : '');
+  document.getElementById('lt-b').className = 'lt-btn' + (mode === 'b' ? ' lt-btn--active' : '');
+}
+
+// Layout B: section nav
+function scrollToSection(id, el) {
+  document.querySelectorAll('.snav-item').forEach(i => i.classList.remove('snav-item--active'));
+  el.classList.add('snav-item--active');
+  const target = document.getElementById(id);
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Scroll-spy for Layout B
+document.getElementById('settingsBody').addEventListener('scroll', function() {
+  const sections = ['sec-model', 'sec-response', 'sec-limits'];
+  const navItems = document.querySelectorAll('.snav-item');
+  let active = 0;
+  sections.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el && el.getBoundingClientRect().top <= 80) active = i;
+  });
+  navItems.forEach((n, i) => n.classList.toggle('snav-item--active', i === active));
+});
+
+// ── Model selection ──
+function selectModel(row, model) {
+  document.querySelectorAll('.model-row').forEach(r => r.classList.remove('model-row--selected'));
+  row.classList.add('model-row--selected');
+  row.querySelector('input[type=radio]').checked = true;
+}
+
+function saveModel() {
+  const selected = document.querySelector('.model-row--selected');
+  const name = selected ? selected.querySelector('.model-row__name').textContent.trim() : '';
+  showToast(`AI 모델이 ${name}으로 설정되었습니다`);
+}
+
+// ── Segmented control ──
+function setSeg(btn, group) {
+  btn.closest('.seg-control').querySelectorAll('.seg-btn').forEach(b => b.classList.remove('seg-btn--active'));
+  btn.classList.add('seg-btn--active');
+  showToast('설정이 저장되었습니다');
+}
+
+// ── System prompt ──
+document.getElementById('sysPrompt').addEventListener('input', updatePromptLen);
+function updatePromptLen() {
+  document.getElementById('promptLen').textContent = document.getElementById('sysPrompt').value.length;
+}
+function savePrompt() { showToast('시스템 프롬프트가 저장되었습니다'); }
+
+// ── Limits ──
+function saveLimit(input, label) { showToast(`${label} 설정이 저장되었습니다`); }
+function saveAgentLimit() { showToast(`동시 에이전트 실행 수가 ${document.getElementById('agentSlider').value}개로 설정되었습니다`); }
+
+initWipLinks();
+</script>
+</body>
+</html>

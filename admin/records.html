@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280">
+  <title>WorkAI 관리자 — 기록</title>
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    /* ── Admin Shell ── */
+    .admin-sidebar{width:var(--sidebar-width);min-width:var(--sidebar-width);background:var(--color-surface);border-right:1px solid var(--color-border);display:flex;flex-direction:column;height:100vh;flex-shrink:0;}
+    .admin-sidebar__header{padding:0 var(--space-md);height:56px;box-sizing:border-box;display:flex;align-items:center;gap:var(--space-sm);border-bottom:1px solid var(--color-border);}
+    .admin-logo{width:28px;height:28px;background:var(--color-primary);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0;}
+    .admin-sidebar__title{font-size:13.5px;font-weight:600;color:var(--color-text-primary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .admin-badge{font-size:10px;font-weight:600;background:#FEF3C7;color:#D97706;padding:2px 6px;border-radius:10px;flex-shrink:0;}
+    .admin-nav{flex:1;padding:var(--space-sm);overflow-y:auto;}
+    .admin-nav__list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:2px;}
+    .admin-nav__link{display:flex;align-items:center;gap:10px;padding:9px var(--space-sm);border-radius:var(--radius-sm);color:var(--color-text-secondary);text-decoration:none;font-size:13.5px;transition:background 0.15s,color 0.15s;cursor:pointer;}
+    .admin-nav__link:hover{background:var(--color-bg);color:var(--color-text-primary);}
+    .admin-nav__link--active{background:#EEF0FE;color:var(--color-primary);font-weight:500;}
+    .admin-sidebar__footer{padding:var(--space-sm) var(--space-md);border-top:1px solid var(--color-border);}
+    .admin-back-link{display:flex;align-items:center;gap:var(--space-sm);font-size:13px;color:var(--color-text-secondary);text-decoration:none;padding:8px var(--space-sm);border-radius:var(--radius-sm);transition:background 0.15s;}
+    .admin-back-link:hover{background:var(--color-bg);color:var(--color-text-primary);}
+    .admin-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+    .admin-topbar{background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:0 var(--space-xl);display:flex;align-items:center;height:56px;flex-shrink:0;gap:var(--space-md);}
+    .admin-topbar__title{font-size:15px;font-weight:600;color:var(--color-text-primary);flex:1;}
+
+    /* ── Body ── */
+    .records-body{flex:1;display:flex;overflow:hidden;}
+
+    /* ── Left: List ── */
+    .records-list{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+    .list-toolbar{padding:var(--space-md) var(--space-lg);border-bottom:1px solid var(--color-border);display:flex;flex-direction:column;gap:var(--space-sm);background:var(--color-surface);}
+    .search-row{display:flex;align-items:center;gap:var(--space-sm);}
+    .search-wrap{flex:1;position:relative;}
+    .search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--color-text-secondary);pointer-events:none;}
+    .search-input{width:100%;box-sizing:border-box;padding:9px 12px 9px 38px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:13.5px;color:var(--color-text-primary);background:var(--color-surface);outline:none;transition:border-color 0.15s;}
+    .search-input:focus{border-color:var(--color-primary);}
+    .filter-toggle{display:flex;align-items:center;gap:6px;padding:8px 14px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:13px;font-weight:500;background:var(--color-surface);color:var(--color-text-secondary);cursor:pointer;white-space:nowrap;transition:background 0.15s;}
+    .filter-toggle:hover{background:var(--color-bg);}
+    .filter-toggle--active{border-color:var(--color-primary);color:var(--color-primary);background:#F5F6FE;}
+    .filter-badge{background:var(--color-primary);color:#fff;font-size:10px;font-weight:700;padding:1px 5px;border-radius:8px;min-width:16px;text-align:center;}
+
+    .filter-bar{display:none;align-items:center;gap:var(--space-sm);flex-wrap:wrap;padding-top:var(--space-xs);}
+    .filter-bar.open{display:flex;}
+    .filter-select{padding:7px 10px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:13px;color:var(--color-text-primary);background:var(--color-surface);outline:none;cursor:pointer;}
+    .filter-select:focus{border-color:var(--color-primary);}
+    .filter-date-row{display:flex;align-items:center;gap:6px;}
+    .filter-date{padding:7px 10px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:13px;color:var(--color-text-primary);background:var(--color-surface);outline:none;}
+    .filter-sep{font-size:13px;color:var(--color-text-secondary);}
+    .filter-reset{padding:7px 12px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:13px;background:var(--color-surface);color:var(--color-text-secondary);cursor:pointer;transition:background 0.15s;}
+    .filter-reset:hover{background:var(--color-bg);}
+    .result-info{font-size:12.5px;color:var(--color-text-secondary);padding:var(--space-xs) var(--space-lg);border-bottom:1px solid var(--color-border);background:var(--color-bg);}
+    .result-info strong{color:var(--color-text-primary);}
+
+    /* ── Table ── */
+    .tbl-scroll{flex:1;overflow-y:auto;}
+    table.rec-table{width:100%;border-collapse:collapse;font-size:13.5px;}
+    .rec-table th{padding:10px var(--space-md);text-align:left;font-size:12px;font-weight:600;color:var(--color-text-secondary);background:var(--color-bg);border-bottom:1px solid var(--color-border);white-space:nowrap;position:sticky;top:0;z-index:1;}
+    .rec-table td{padding:12px var(--space-md);border-bottom:1px solid var(--color-border);color:var(--color-text-primary);vertical-align:middle;}
+    .rec-table tbody tr{cursor:pointer;transition:background 0.12s;}
+    .rec-table tbody tr:hover td{background:#F5F6FE;}
+    .rec-table tbody tr.row--active td{background:#EEF0FE;}
+    .rec-table tbody tr:last-child td{border-bottom:none;}
+
+    .user-cell{display:flex;align-items:center;gap:var(--space-sm);}
+    .user-av{width:28px;height:28px;border-radius:50%;color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .chat-title{font-weight:500;color:var(--color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;}
+    .chat-preview{font-size:12px;color:var(--color-text-secondary);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;}
+    .model-badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:3px 8px;border-radius:8px;font-weight:500;white-space:nowrap;}
+    .model-badge--sonnet{background:#EEF0FE;color:var(--color-primary);}
+    .model-badge--haiku{background:#D1FAE5;color:#065F46;}
+    .model-badge--opus{background:#EDE9FE;color:#6D28D9;}
+    .token-cell{text-align:right;font-size:13px;color:var(--color-text-secondary);}
+    .token-val{font-weight:500;color:var(--color-text-primary);}
+    .time-cell{font-size:12.5px;color:var(--color-text-secondary);white-space:nowrap;}
+
+    /* ── Pager ── */
+    .pager{display:flex;align-items:center;justify-content:center;gap:var(--space-xs);padding:var(--space-md);border-top:1px solid var(--color-border);background:var(--color-surface);}
+    .pg-btn{min-width:32px;height:32px;padding:0 var(--space-sm);border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:13px;background:var(--color-surface);color:var(--color-text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
+    .pg-btn:hover{background:var(--color-bg);}
+    .pg-btn--active{background:var(--color-primary);color:#fff;border-color:var(--color-primary);font-weight:600;}
+    .pg-btn:disabled{opacity:0.4;cursor:default;}
+
+    /* ── Right: Detail Panel ── */
+    .detail-panel{width:0;flex-shrink:0;border-left:1px solid var(--color-border);background:var(--color-surface);display:flex;flex-direction:column;overflow:hidden;transition:width 0.25s ease;}
+    .detail-panel.open{width:420px;}
+    .panel-header{padding:0 var(--space-lg);height:52px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--color-border);flex-shrink:0;}
+    .panel-header__title{font-size:14px;font-weight:600;color:var(--color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;padding-right:var(--space-sm);}
+    .panel-close{width:28px;height:28px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);color:var(--color-text-secondary);transition:background 0.15s;flex-shrink:0;}
+    .panel-close:hover{background:var(--color-bg);}
+    .panel-meta{padding:var(--space-md) var(--space-lg);border-bottom:1px solid var(--color-border);display:flex;flex-wrap:wrap;gap:var(--space-sm);flex-shrink:0;}
+    .meta-chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:4px 10px;border-radius:8px;background:var(--color-bg);color:var(--color-text-secondary);border:1px solid var(--color-border);}
+    .panel-body{flex:1;overflow-y:auto;padding:var(--space-md) var(--space-lg);}
+    .msg-group{margin-bottom:var(--space-lg);}
+    .msg-group:last-child{margin-bottom:0;}
+    .msg-role{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--color-text-secondary);margin-bottom:6px;}
+    .msg-bubble{padding:var(--space-sm) var(--space-md);border-radius:var(--radius-sm);font-size:13.5px;line-height:1.6;color:var(--color-text-primary);}
+    .msg-bubble--user{background:#EEF0FE;border-radius:var(--radius-md) var(--radius-md) var(--radius-sm) var(--radius-md);}
+    .msg-bubble--ai{background:var(--color-bg);border:1px solid var(--color-border);border-radius:var(--radius-md) var(--radius-md) var(--radius-md) var(--radius-sm);}
+    .msg-time{font-size:11px;color:var(--color-text-disabled);margin-top:4px;text-align:right;}
+    .panel-footer{padding:var(--space-md) var(--space-lg);border-top:1px solid var(--color-border);flex-shrink:0;}
+    .export-row{display:flex;gap:var(--space-sm);}
+    .panel-btn{flex:1;padding:8px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:13px;background:var(--color-surface);color:var(--color-text-secondary);cursor:pointer;transition:background 0.15s;display:flex;align-items:center;justify-content:center;gap:6px;}
+    .panel-btn:hover{background:var(--color-bg);color:var(--color-text-primary);}
+  </style>
+</head>
+<body style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--color-bg);display:flex;height:100vh;overflow:hidden;">
+
+<aside class="admin-sidebar">
+  <div class="admin-sidebar__header">
+    <div class="admin-logo">W</div>
+    <span class="admin-sidebar__title">WorkAI 관리자</span>
+    <span class="admin-badge">ADMIN</span>
+  </div>
+  <nav class="admin-nav">
+    <ul class="admin-nav__list">
+      <li><a href="info.html" class="admin-nav__link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        기본 정보
+      </a></li>
+      <li><a href="#" class="admin-nav__link" data-wip>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        대시보드
+      </a></li>
+      <li><a href="usage.html" class="admin-nav__link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        토큰 사용량
+      </a></li>
+      <li><a href="org.html" class="admin-nav__link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="6" height="4"/><rect x="9" y="3" width="6" height="4"/><rect x="16" y="7" width="6" height="4"/><line x1="5" y1="11" x2="5" y2="18"/><line x1="12" y1="7" x2="12" y2="18"/><line x1="19" y1="11" x2="19" y2="18"/><line x1="5" y1="18" x2="19" y2="18"/></svg>
+        조직
+      </a></li>
+      <li><a href="members.html" class="admin-nav__link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        구성원
+      </a></li>
+      <li><a href="ai-settings.html" class="admin-nav__link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        AI 설정
+      </a></li>
+      <li><a href="security.html" class="admin-nav__link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        보안 설정
+      </a></li>
+      <li><a href="records.html" class="admin-nav__link admin-nav__link--active">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        기록
+      </a></li>
+    </ul>
+  </nav>
+  <div class="admin-sidebar__footer">
+    <a href="../index.html" class="admin-back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      사용자 페이지로 이동
+    </a>
+  </div>
+</aside>
+
+<div class="admin-main">
+  <div class="admin-topbar">
+    <span class="admin-topbar__title">기록</span>
+    <button style="display:flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:13px;color:var(--color-text-secondary);background:var(--color-surface);cursor:pointer;" onclick="showToast('CSV 파일이 다운로드됩니다.')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      CSV 내보내기
+    </button>
+  </div>
+
+  <div class="records-body">
+    <!-- List -->
+    <div class="records-list">
+      <div class="list-toolbar">
+        <div class="search-row">
+          <div class="search-wrap">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="search-input" id="searchInput" placeholder="대화 제목, 내용, 사용자 검색…" oninput="applyFilters()">
+          </div>
+          <button class="filter-toggle" id="filterToggle" onclick="toggleFilter()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            필터
+            <span class="filter-badge" id="filterBadge" style="display:none">0</span>
+          </button>
+        </div>
+        <div class="filter-bar" id="filterBar">
+          <select class="filter-select" id="filterUser" onchange="applyFilters()">
+            <option value="">전체 사용자</option>
+            <option>홍길동</option><option>김지수</option><option>이민준</option>
+            <option>박서연</option><option>최준혁</option><option>정예린</option>
+            <option>강도현</option><option>윤소희</option><option>임태양</option>
+          </select>
+          <select class="filter-select" id="filterModel" onchange="applyFilters()">
+            <option value="">전체 모델</option>
+            <option>Claude Sonnet</option>
+            <option>Claude Haiku</option>
+            <option>Claude Opus</option>
+          </select>
+          <div class="filter-date-row">
+            <input type="date" class="filter-date" id="filterFrom" value="2025-04-01" onchange="applyFilters()">
+            <span class="filter-sep">—</span>
+            <input type="date" class="filter-date" id="filterTo" value="2025-04-27" onchange="applyFilters()">
+          </div>
+          <button class="filter-reset" onclick="resetFilters()">초기화</button>
+        </div>
+      </div>
+
+      <div class="result-info" id="resultInfo"></div>
+
+      <div class="tbl-scroll">
+        <table class="rec-table">
+          <thead>
+            <tr>
+              <th style="width:160px;">사용자</th>
+              <th>대화 제목</th>
+              <th style="width:130px;">모델</th>
+              <th style="width:100px;text-align:right;">토큰</th>
+              <th style="width:130px;">일시</th>
+            </tr>
+          </thead>
+          <tbody id="recTbody"></tbody>
+        </table>
+      </div>
+
+      <div class="pager" id="pager"></div>
+    </div>
+
+    <!-- Detail Panel -->
+    <div class="detail-panel" id="detailPanel">
+      <div class="panel-header">
+        <span class="panel-header__title" id="panelTitle">—</span>
+        <button class="panel-close" onclick="closePanel()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="panel-meta" id="panelMeta"></div>
+      <div class="panel-body" id="panelBody"></div>
+      <div class="panel-footer">
+        <div class="export-row">
+          <button class="panel-btn" onclick="showToast('대화가 텍스트로 저장됩니다.')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            내보내기
+          </button>
+          <button class="panel-btn" style="color:#DC2626;border-color:#FCA5A5;" onclick="confirmDelete()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            기록 삭제
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────
+const RECORDS = [
+  { id:1,  user:'홍길동', avatar:'홍', color:'#5B6EF5', dept:'개발본부',    model:'Claude Sonnet', tokens:12840, title:'2025년 1분기 기술 부채 현황 분석', time:'2025.04.27 14:32',
+    messages:[
+      {role:'user', text:'우리 팀 1분기 기술 부채 현황을 정리해줘. 백엔드 레거시 코드와 테스트 커버리지 문제 중심으로.', time:'14:30'},
+      {role:'ai', text:'1분기 기술 부채 현황을 분석한 결과입니다.\n\n**백엔드 레거시 코드**\n- 결제 모듈: Node.js 12 기반, EOL 도달 예정. 마이그레이션 필요\n- 인증 서비스: JWT 라이브러리 구버전 사용 중, 보안 패치 필요\n- ORM 레이어: 비동기 쿼리 처리 비일관성 → 간헐적 성능 저하\n\n**테스트 커버리지**\n- 전체 커버리지: 51% (목표 80% 대비 미달)\n- API 엔드포인트 중 E2E 테스트 미적용 비율: 38%', time:'14:31'},
+      {role:'user', text:'우선순위 높은 항목 3가지만 추려줘.', time:'14:32'},
+      {role:'ai', text:'우선순위 기준 상위 3개 항목입니다.\n\n1. **결제 모듈 마이그레이션** — 보안 리스크 직결, 2분기 내 완료 필요\n2. **인증 서비스 보안 패치** — CVE 취약점 2건 포함, 즉시 대응 권고\n3. **핵심 API E2E 테스트 추가** — 출시 주기 단축 위해 CI 파이프라인 연동 선행', time:'14:32'},
+    ]
+  },
+  { id:2,  user:'김지수', avatar:'김', color:'#10B981', dept:'개발본부',    model:'Claude Haiku', tokens:4210, title:'신규 온보딩 UI 컴포넌트 리뷰 요청', time:'2025.04.27 11:18',
+    messages:[
+      {role:'user', text:'온보딩 플로우 UI 컴포넌트 코드 리뷰해줘. 접근성 위주로.', time:'11:17'},
+      {role:'ai', text:'접근성 관점에서 주요 개선 포인트를 정리했습니다.\n\n- `<div>` 클릭 이벤트 → `<button>` 태그로 교체 권장\n- 이미지 alt 속성 누락 3곳\n- 색상 대비율: CTA 버튼 3.8:1 → WCAG AA 기준(4.5:1) 미달\n- 폼 입력 필드 `aria-label` 미설정', time:'11:18'},
+    ]
+  },
+  { id:3,  user:'이민준', avatar:'이', color:'#F59E0B', dept:'경영지원본부', model:'Claude Sonnet', tokens:8920, title:'인사규정 개정안 주요 변경사항 요약', time:'2025.04.26 16:45',
+    messages:[
+      {role:'user', text:'첨부한 인사규정 개정안에서 기존 규정 대비 주요 변경사항만 요약해줘.', time:'16:43'},
+      {role:'ai', text:'인사규정 개정안 변경사항 요약입니다.\n\n**추가된 항목**\n- 재택근무 신청 절차 및 승인 기준 신설 (제12조)\n- 육아기 근로시간 단축 대상 확대 (제18조)\n\n**변경된 항목**\n- 연차 발생 기준일: 입사일 → 회계연도 기준으로 통일\n- 성과급 지급 시기: 익년 3월 → 익년 2월로 앞당김\n\n**삭제된 항목**\n- 구 제9조 특별휴가 조항 (법정 휴가로 통합)', time:'16:44'},
+    ]
+  },
+  { id:4,  user:'박서연', avatar:'박', color:'#EF4444', dept:'사업본부',    model:'Claude Sonnet', tokens:6340, title:'2025년 2분기 영업 목표 달성 전략 수립', time:'2025.04.26 10:22',
+    messages:[
+      {role:'user', text:'2분기 영업 목표 120억 달성을 위한 팀별 전략을 짜줘. 현재 진척은 38억이야.', time:'10:20'},
+      {role:'ai', text:'2분기 목표 120억 대비 현재 38억(31.7%) 진척을 기준으로 전략을 수립했습니다.\n\n**남은 기간(5~6월) 목표: 82억**\n\n팀별 분배안\n- 영업1팀: 45억 (신규 계약 중심, 파이프라인 10건 이상 확보)\n- 영업2팀: 37억 (갱신 고객 집중 공략)\n\n우선 액션\n1. 4월 내 파이프라인 현황 전수 검토\n2. 이탈 위험 고객 Top 5 긴급 대응\n3. 월별 마감 스프린트 도입', time:'10:21'},
+    ]
+  },
+  { id:5,  user:'최준혁', avatar:'최', color:'#8B5CF6', dept:'개발본부',    model:'Claude Opus', tokens:21500, title:'추천 시스템 알고리즘 설계 검토', time:'2025.04.25 15:10',
+    messages:[
+      {role:'user', text:'콘텐츠 기반 필터링과 협업 필터링을 결합한 하이브리드 추천 시스템 설계안 검토해줘.', time:'15:08'},
+      {role:'ai', text:'하이브리드 추천 시스템 설계안을 검토했습니다.\n\n**아키텍처 적합성**: 전반적으로 타당합니다. 콜드 스타트 문제를 콘텐츠 기반으로 보완하고, 사용자 수가 늘면 협업 필터링 비중을 높이는 전략은 실용적입니다.\n\n**개선 제안**\n- 가중치 블렌딩(α): 초기에는 0.7/0.3(콘텐츠 우선) → 데이터 축적 후 자동 조정 로직 도입 권장\n- 실시간 vs 배치: 초기 MVP는 배치로 충분, 사용자 1만 명 이상 시 실시간 전환 검토\n- 평가 지표: NDCG@10, Precision@5 기준으로 A/B 테스트 설계 필요', time:'15:10'},
+    ]
+  },
+  { id:6,  user:'정예린', avatar:'정', color:'#EC4899', dept:'경영지원본부', model:'Claude Sonnet', tokens:5180, title:'하반기 예산안 편성 기준 문의', time:'2025.04.25 09:55',
+    messages:[
+      {role:'user', text:'하반기 예산안 편성 시 전년도 실적 대비 증감률 산정 방식 알려줘.', time:'09:54'},
+      {role:'ai', text:'하반기 예산 편성 증감률 산정 방식입니다.\n\n**기본 공식**\n증감률(%) = (금년 편성액 − 전년 결산액) ÷ 전년 결산액 × 100\n\n**주의사항**\n- 일회성 비용(이벤트성 집행 등)은 전년 실적에서 제외 후 비교\n- 팀 인원 변동 시 1인당 단가 기준으로 재산정 권장\n- 물가상승률(2.3%) 반영 여부를 별도 항목으로 표기', time:'09:55'},
+    ]
+  },
+  { id:7,  user:'강도현', avatar:'강', color:'#0EA5E9', dept:'사업본부',    model:'Claude Haiku', tokens:2980, title:'경쟁사 마케팅 캠페인 비교 분석', time:'2025.04.24 14:20',
+    messages:[
+      {role:'user', text:'최근 A사, B사 SNS 캠페인 전략을 비교 분석해줘.', time:'14:19'},
+      {role:'ai', text:'A사 vs B사 SNS 캠페인 비교 분석입니다.\n\n| 구분 | A사 | B사 |\n|------|-----|-----|\n| 채널 | 인스타그램 중심 | 유튜브 + 틱톡 |\n| 타깃 | 2030 여성 | 1020 전체 |\n| 핵심 메시지 | 프리미엄·라이프스타일 | 가성비·재미 |\n| 참여율 | 3.2% | 5.8% |\n\n**시사점**: B사의 숏폼 중심 전략이 참여율에서 우세. 당사도 틱톡 채널 진입 검토 권장.', time:'14:20'},
+    ]
+  },
+  { id:8,  user:'윤소희', avatar:'윤', color:'#14B8A6', dept:'경영지원본부', model:'Claude Sonnet', tokens:7640, title:'월별 재무 현황 보고서 초안 작성', time:'2025.04.24 11:05',
+    messages:[
+      {role:'user', text:'3월 재무 현황 보고서 초안 작성해줘. 매출 18.4억, 영업이익 3.2억, 영업이익률 17.4%.', time:'11:03'},
+      {role:'ai', text:'3월 재무 현황 보고서 초안입니다.\n\n---\n**2025년 3월 재무 현황 보고**\n\n■ 손익 요약\n- 매출액: 18.4억원 (전월 대비 +6.4%)\n- 영업이익: 3.2억원\n- 영업이익률: 17.4%\n\n■ 특이사항\n- 신규 계약 3건 체결로 매출 성장 견인\n- 인건비 소폭 증가(+0.8억) 반영됨\n\n■ 4월 전망\n- 계절적 성수기 진입으로 매출 20억 초과 달성 예상\n---', time:'11:04'},
+    ]
+  },
+  { id:9,  user:'임태양', avatar:'임', color:'#6366F1', dept:'개발본부',    model:'Claude Haiku', tokens:3310, title:'AWS 비용 최적화 방안 검토', time:'2025.04.23 16:38',
+    messages:[
+      {role:'user', text:'현재 AWS 월 비용 약 420만원인데 절감 방법 알려줘.', time:'16:37'},
+      {role:'ai', text:'AWS 비용 절감 방안입니다.\n\n1. **Reserved Instance 전환**: 온디맨드 대비 최대 40% 절약 — 안정적으로 사용하는 EC2 인스턴스 대상\n2. **S3 스토리지 클래스 조정**: 90일 이상 미접근 객체 → Glacier로 자동 이전 (라이프사이클 정책)\n3. **NAT Gateway 최적화**: 불필요한 트래픽 경로 정리\n4. **Compute Savings Plan**: 컴퓨팅 패밀리 고정 시 추가 할인\n\n예상 절감액: 월 80~120만원 수준', time:'16:38'},
+    ]
+  },
+  { id:10, user:'홍길동', avatar:'홍', color:'#5B6EF5', dept:'개발본부',    model:'Claude Sonnet', tokens:9870, title:'마이크로서비스 전환 로드맵 초안', time:'2025.04.23 10:14',
+    messages:[
+      {role:'user', text:'현재 모놀리식 구조를 마이크로서비스로 전환하는 로드맵 초안 만들어줘. 6개월 기준.', time:'10:12'},
+      {role:'ai', text:'6개월 마이크로서비스 전환 로드맵 초안입니다.\n\n**1단계 (1~2월): 분석 및 설계**\n- 도메인 경계 정의 (DDD 기반)\n- API Gateway 설계\n- 컨테이너 인프라 준비 (K8s 클러스터)\n\n**2단계 (3~4월): 파일럿 전환**\n- 인증 서비스 분리 (낮은 복잡도, 높은 독립성)\n- CI/CD 파이프라인 구축\n\n**3단계 (5~6월): 핵심 서비스 전환**\n- 결제·알림 서비스 분리\n- 서비스 메시 도입 (Istio)\n- 성능 모니터링 체계 수립', time:'10:13'},
+    ]
+  },
+  { id:11, user:'한나연', avatar:'한', color:'#F97316', dept:'사업본부',    model:'Claude Haiku', tokens:2140, title:'고객사 미팅 사전 자료 정리', time:'2025.04.22 15:50',
+    messages:[
+      {role:'user', text:'내일 오전 10시 (주)테크솔루션 미팅 준비 자료 정리해줘.', time:'15:49'},
+      {role:'ai', text:'(주)테크솔루션 미팅 준비 자료입니다.\n\n**회사 개요**\n- 설립: 2018년, 임직원 약 200명\n- 업종: B2B SaaS (HR 솔루션)\n- 최근 이슈: 시리즈B 투자 완료, 해외 진출 준비 중\n\n**미팅 안건 (예상)**\n- 현재 내부 AI 도구 사용 현황 파악\n- WorkAI 도입 시 기대 효과 제시\n\n**제안 포인트**\n- HR 서류 자동화 → 인사팀 업무 30% 절감 사례 공유 권장', time:'15:50'},
+    ]
+  },
+  { id:12, user:'이민준', avatar:'이', color:'#F59E0B', dept:'경영지원본부', model:'Claude Sonnet', tokens:6720, title:'신입사원 온보딩 체크리스트 작성', time:'2025.04.22 09:30',
+    messages:[
+      {role:'user', text:'5월 입사 예정인 신입 2명을 위한 온보딩 체크리스트 만들어줘.', time:'09:29'},
+      {role:'ai', text:'신입사원 온보딩 체크리스트 (5월 입사)입니다.\n\n**입사 전 (D-7 이전)**\n- [ ] 계정 생성 (이메일, 슬랙, 지라)\n- [ ] 노트북 및 장비 준비\n- [ ] 입사 서류 발송\n\n**입사 1일차**\n- [ ] 팀 소개 및 사무실 투어\n- [ ] 보안 서약서 서명\n- [ ] WorkAI 계정 생성 및 사용법 안내\n\n**입사 1주차**\n- [ ] 팀별 업무 현황 브리핑\n- [ ] 사수 배정 및 OJT 일정 확정\n- [ ] 1:1 온보딩 미팅 (HR)', time:'09:30'},
+    ]
+  },
+];
+
+// ── State ──────────────────────────────────────────────
+let filtered = [...RECORDS];
+let currentPage = 1;
+const PAGE_SIZE = 10;
+let activeId = null;
+let filterOpen = false;
+
+// ── Filter ────────────────────────────────────────────
+function applyFilters() {
+  const q     = document.getElementById('searchInput').value.trim().toLowerCase();
+  const user  = document.getElementById('filterUser').value;
+  const model = document.getElementById('filterModel').value;
+
+  filtered = RECORDS.filter(r => {
+    if (user  && r.user  !== user)  return false;
+    if (model && r.model !== model) return false;
+    if (q && !r.title.toLowerCase().includes(q) && !r.user.toLowerCase().includes(q) &&
+        !r.messages.some(m => m.text.toLowerCase().includes(q))) return false;
+    return true;
+  });
+
+  // filter badge
+  let cnt = 0;
+  if (user) cnt++; if (model) cnt++;
+  const badge = document.getElementById('filterBadge');
+  if (cnt > 0) { badge.style.display = 'inline-block'; badge.textContent = cnt; }
+  else badge.style.display = 'none';
+
+  currentPage = 1;
+  renderTable();
+}
+function resetFilters() {
+  document.getElementById('filterUser').value  = '';
+  document.getElementById('filterModel').value = '';
+  document.getElementById('filterFrom').value  = '2025-04-01';
+  document.getElementById('filterTo').value    = '2025-04-27';
+  applyFilters();
+}
+function toggleFilter() {
+  filterOpen = !filterOpen;
+  document.getElementById('filterBar').classList.toggle('open', filterOpen);
+  document.getElementById('filterToggle').classList.toggle('filter-toggle--active', filterOpen);
+}
+
+// ── Table ─────────────────────────────────────────────
+function renderTable() {
+  const total = filtered.length;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const page = filtered.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE);
+
+  document.getElementById('resultInfo').innerHTML =
+    `전체 <strong>${total.toLocaleString()}건</strong>의 대화 기록`;
+
+  function modelBadge(m) {
+    const cls = m.includes('Haiku') ? 'haiku' : m.includes('Opus') ? 'opus' : 'sonnet';
+    return `<span class="model-badge model-badge--${cls}">${m}</span>`;
+  }
+  function fmtToken(n) { return n >= 1000 ? (n/1000).toFixed(1)+'K' : n; }
+
+  document.getElementById('recTbody').innerHTML = page.map(r => `
+    <tr onclick="openDetail(${r.id})" class="${activeId===r.id?'row--active':''}">
+      <td>
+        <div class="user-cell">
+          <div class="user-av" style="background:${r.color}">${r.avatar}</div>
+          <div>
+            <div style="font-weight:500;font-size:13.5px">${r.user}</div>
+            <div style="font-size:11px;color:var(--color-text-secondary)">${r.dept}</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div class="chat-title">${r.title}</div>
+        <div class="chat-preview">${r.messages[0].text.slice(0,60)}…</div>
+      </td>
+      <td>${modelBadge(r.model)}</td>
+      <td class="token-cell"><span class="token-val">${fmtToken(r.tokens)}</span></td>
+      <td class="time-cell">${r.time}</td>
+    </tr>`).join('');
+
+  // Pager
+  const pager = document.getElementById('pager');
+  if (totalPages <= 1) { pager.innerHTML = ''; return; }
+  let html = `<button class="pg-btn" onclick="setPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+  for (let p = 1; p <= totalPages; p++) {
+    html += `<button class="pg-btn ${p===currentPage?'pg-btn--active':''}" onclick="setPage(${p})">${p}</button>`;
+  }
+  html += `<button class="pg-btn" onclick="setPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>›</button>`;
+  pager.innerHTML = html;
+}
+function setPage(p) { currentPage = p; renderTable(); }
+
+// ── Detail Panel ──────────────────────────────────────
+function openDetail(id) {
+  activeId = id;
+  const r = RECORDS.find(x => x.id === id);
+
+  document.getElementById('panelTitle').textContent = r.title;
+
+  function modelBadge(m) {
+    const cls = m.includes('Haiku') ? 'haiku' : m.includes('Opus') ? 'opus' : 'sonnet';
+    return `<span class="model-badge model-badge--${cls}">${m}</span>`;
+  }
+  function fmtToken(n) { return n >= 1000 ? (n/1000).toFixed(1)+'K' : n; }
+
+  document.getElementById('panelMeta').innerHTML = `
+    <span class="meta-chip">
+      <div style="width:18px;height:18px;border-radius:50%;background:${r.color};color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center">${r.avatar}</div>
+      ${r.user}
+    </span>
+    ${modelBadge(r.model)}
+    <span class="meta-chip">토큰 ${fmtToken(r.tokens)}</span>
+    <span class="meta-chip">${r.time}</span>
+  `;
+
+  document.getElementById('panelBody').innerHTML = r.messages.map(m => `
+    <div class="msg-group">
+      <div class="msg-role">${m.role === 'user' ? r.user : 'AI 어시스턴트'}</div>
+      <div class="msg-bubble msg-bubble--${m.role}" style="white-space:pre-wrap">${m.text}</div>
+      <div class="msg-time">${m.time}</div>
+    </div>`).join('');
+
+  document.getElementById('detailPanel').classList.add('open');
+  renderTable();
+}
+function closePanel() {
+  activeId = null;
+  document.getElementById('detailPanel').classList.remove('open');
+  renderTable();
+}
+function confirmDelete() {
+  if (confirm('이 대화 기록을 삭제하시겠습니까?')) {
+    closePanel();
+    showToast('대화 기록이 삭제되었습니다.');
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1F2937;color:#fff;padding:10px 20px;border-radius:8px;font-size:13.5px;z-index:9999;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,0.2);transition:opacity 0.3s;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, 2000);
+}
+
+// ── Init ──────────────────────────────────────────────
+applyFilters();
+</script>
+</body>
+</html>

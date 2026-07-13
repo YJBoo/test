@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280">
+  <title>WorkAI 관리자 — 구성원</title>
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    /* ── Admin Sidebar ── */
+    .admin-sidebar {
+      width: var(--sidebar-width); min-width: var(--sidebar-width);
+      background: var(--color-surface); border-right: 1px solid var(--color-border);
+      display: flex; flex-direction: column; height: 100vh; flex-shrink: 0;
+    }
+    .admin-sidebar__header {
+      padding: 0 var(--space-md); height: 56px; box-sizing: border-box;
+      display: flex; align-items: center; gap: var(--space-sm);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .admin-logo { width:28px;height:28px;background:var(--color-primary);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0; }
+    .admin-sidebar__title { font-size:13.5px;font-weight:600;color:var(--color-text-primary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .admin-badge { font-size:10px;font-weight:600;background:#FEF3C7;color:#D97706;padding:2px 6px;border-radius:10px;flex-shrink:0; }
+    .admin-nav { flex:1;padding:var(--space-sm);overflow-y:auto; }
+    .admin-nav__list { list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:2px; }
+    .admin-nav__link { display:flex;align-items:center;gap:10px;padding:9px var(--space-sm);border-radius:var(--radius-sm);color:var(--color-text-secondary);text-decoration:none;font-size:13.5px;transition:background 0.15s,color 0.15s;cursor:pointer; }
+    .admin-nav__link:hover { background:var(--color-bg);color:var(--color-text-primary); }
+    .admin-nav__link--active { background:#EEF0FE;color:var(--color-primary);font-weight:500; }
+    .admin-sidebar__footer { padding:var(--space-sm) var(--space-md);border-top:1px solid var(--color-border); }
+    .admin-back-link { display:flex;align-items:center;gap:var(--space-sm);font-size:13px;color:var(--color-text-secondary);text-decoration:none;padding:8px var(--space-sm);border-radius:var(--radius-sm);transition:background 0.15s; }
+    .admin-back-link:hover { background:var(--color-bg);color:var(--color-text-primary); }
+
+    /* ── Admin Main ── */
+    .admin-main { flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--color-bg);min-width:0; }
+    .admin-topbar { background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:0 var(--space-xl);display:flex;align-items:center;justify-content:space-between;height:56px;flex-shrink:0;gap:var(--space-md); }
+    .admin-topbar__title { font-size:15px;font-weight:600;color:var(--color-text-primary); }
+    .btn-primary { padding:8px 16px;background:var(--color-primary);color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap; }
+    .btn-primary:hover { background:var(--color-primary-hover); }
+    .btn-secondary { padding:8px 14px;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-primary);border-radius:var(--radius-sm);font-size:13px;cursor:pointer; }
+    .btn-secondary:hover { background:var(--color-bg); }
+
+    /* ── Content Area ── */
+    .members-content { flex:1;overflow:hidden;display:flex;flex-direction:column; }
+
+    /* ── Search Bar ── */
+    .search-bar { background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:var(--space-md) var(--space-xl);flex-shrink:0; }
+    .search-row { display:flex;align-items:center;gap:var(--space-sm); }
+    .search-input-wrap { position:relative;flex:1;max-width:400px; }
+    .search-icon { position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--color-text-secondary);pointer-events:none; }
+    .search-input { width:100%;box-sizing:border-box;padding:8px 12px 8px 34px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:13px;color:var(--color-text-primary);outline:none; }
+    .search-input:focus { border-color:var(--color-primary); }
+    .btn-advanced { display:inline-flex;align-items:center;gap:5px;padding:8px 12px;border:1px solid var(--color-border);background:var(--color-surface);border-radius:var(--radius-sm);font-size:13px;color:var(--color-text-secondary);cursor:pointer;white-space:nowrap;transition:border-color 0.15s,color 0.15s; }
+    .btn-advanced:hover { border-color:var(--color-primary);color:var(--color-primary); }
+    .btn-advanced--active { border-color:var(--color-primary);color:var(--color-primary);background:#F5F6FE; }
+    .filter-badge { min-width:16px;height:16px;background:var(--color-primary);color:#fff;border-radius:8px;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;padding:0 4px; }
+    .member-count-txt { margin-left:auto;font-size:13px;color:var(--color-text-secondary);white-space:nowrap; }
+
+    .search-advanced { margin-top:var(--space-sm);padding-top:var(--space-sm);border-top:1px solid var(--color-border);display:none; }
+    .search-advanced--open { display:block; }
+    .advanced-row { display:flex;align-items:center;gap:var(--space-sm);flex-wrap:wrap; }
+    .filter-select { padding:7px 10px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:13px;color:var(--color-text-primary);outline:none;background:var(--color-surface);cursor:pointer; }
+    .filter-select:focus { border-color:var(--color-primary); }
+    .btn-reset { padding:7px 12px;border:none;background:none;font-size:13px;color:var(--color-text-secondary);cursor:pointer;border-radius:var(--radius-sm); }
+    .btn-reset:hover { background:var(--color-bg);color:var(--color-text-primary); }
+
+    /* ── Table ── */
+    .table-wrap { flex:1;overflow-y:auto; }
+    .members-table { width:100%;border-collapse:collapse;table-layout:fixed; }
+    .members-table thead th { padding:10px var(--space-md);text-align:left;font-size:12px;font-weight:600;color:var(--color-text-secondary);background:var(--color-surface);border-bottom:1px solid var(--color-border);position:sticky;top:0;z-index:1;white-space:nowrap; }
+    .members-table tbody tr { border-bottom:1px solid var(--color-border);cursor:pointer;transition:background 0.12s; }
+    .members-table tbody tr:hover { background:#F9FAFB; }
+    .members-table tbody tr.row--selected { background:#EEF0FE; }
+    .members-table tbody td { padding:12px var(--space-md);font-size:13.5px;color:var(--color-text-primary);vertical-align:middle; }
+
+    .col-check { width:44px; }
+    .col-name  { width:190px; }
+    .col-email { width:220px; }
+    .col-dept  { width:140px; }
+    .col-role  { width:110px; }
+    .col-status{ width:120px; }
+    .col-login { width:130px; }
+    .col-action{ width:48px; }
+
+    .member-cell { display:flex;align-items:center;gap:var(--space-sm); }
+    .m-avatar { width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff; }
+    .m-name { font-weight:500; }
+
+    .role-badge { display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:500; }
+    .role-badge--admin { background:#EEF0FE;color:var(--color-primary); }
+    .role-badge--user  { background:var(--color-bg);color:var(--color-text-secondary); }
+    .status-badge { display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:10px;font-size:12px;font-weight:500; }
+    .status-badge--active   { background:#D1FAE5;color:#065F46; }
+    .status-badge--inactive { background:#F3F4F6;color:var(--color-text-secondary); }
+    .status-badge--pending  { background:#FEF3C7;color:#92400E; }
+    .status-dot { width:6px;height:6px;border-radius:50%;flex-shrink:0; }
+    .status-dot--active   { background:#10B981; }
+    .status-dot--inactive { background:#D1D5DB; }
+    .status-dot--pending  { background:#F59E0B; }
+    .login-txt { font-size:13px;color:var(--color-text-secondary); }
+
+    .kebab-btn { width:28px;height:28px;border:none;background:none;cursor:pointer;border-radius:var(--radius-sm);color:var(--color-text-secondary);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;letter-spacing:1px; }
+    .kebab-btn:hover { background:var(--color-bg); }
+    .row-check { width:15px;height:15px;accent-color:var(--color-primary);cursor:pointer; }
+    .table-empty { padding:60px;text-align:center;color:var(--color-text-secondary);font-size:14px; }
+
+    /* ── Row Dropdown ── */
+    .row-dropdown { position:fixed;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);box-shadow:0 4px 16px rgba(0,0,0,0.12);z-index:1000;min-width:164px;padding:4px 0;display:none; }
+    .dd-item { padding:8px 14px;font-size:13.5px;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--color-text-primary); }
+    .dd-item:hover { background:var(--color-bg); }
+    .dd-item--danger { color:#DC2626; }
+    .dd-item--danger:hover { background:#FFF5F5; }
+    .dd-item--warn { color:#D97706; }
+    .dd-item--warn:hover { background:#FFFBEB; }
+    .dd-item--success { color:#10B981; }
+    .dd-item--success:hover { background:#F0FDF4; }
+    .dd-divider { height:1px;background:var(--color-border);margin:4px 0; }
+
+    /* ── Bulk Bar ── */
+    .bulk-bar { position:fixed;bottom:var(--space-xl);left:50%;transform:translateX(-50%);background:#1F2937;color:#fff;border-radius:var(--radius-md);padding:12px var(--space-lg);display:none;align-items:center;gap:var(--space-md);box-shadow:0 8px 24px rgba(0,0,0,0.25);z-index:400;white-space:nowrap; }
+    .bulk-bar--visible { display:flex; }
+    .bulk-bar__count { font-size:13.5px;font-weight:500; }
+    .bulk-divider { width:1px;height:16px;background:rgba(255,255,255,0.2); }
+    .bulk-btn { padding:7px 12px;border-radius:var(--radius-sm);font-size:13px;cursor:pointer;border:none; }
+    .bulk-btn--ghost { background:rgba(255,255,255,0.1);color:#fff; }
+    .bulk-btn--ghost:hover { background:rgba(255,255,255,0.2); }
+    .bulk-btn--danger { background:#DC2626;color:#fff; }
+    .bulk-btn--danger:hover { background:#B91C1C; }
+    .bulk-close { background:none;border:none;color:rgba(255,255,255,0.6);cursor:pointer;font-size:18px;padding:0;line-height:1;margin-left:4px; }
+    .bulk-close:hover { color:#fff; }
+
+    /* ── Slide Panel ── */
+    .slide-panel { position:fixed;top:0;right:-420px;width:400px;height:100vh;background:var(--color-surface);border-left:1px solid var(--color-border);box-shadow:-4px 0 24px rgba(0,0,0,0.08);transition:right 0.25s cubic-bezier(0.25,0.46,0.45,0.94);z-index:300;display:flex;flex-direction:column;overflow:hidden; }
+    .slide-panel--open { right:0; }
+    .panel-header { display:flex;align-items:center;justify-content:space-between;padding:var(--space-md) var(--space-lg);border-bottom:1px solid var(--color-border);flex-shrink:0; }
+    .panel-title { font-size:15px;font-weight:600;color:var(--color-text-primary); }
+    .panel-close { width:28px;height:28px;border:none;background:none;cursor:pointer;color:var(--color-text-secondary);display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm); }
+    .panel-close:hover { background:var(--color-bg); }
+    .panel-body { flex:1;overflow-y:auto;padding:var(--space-lg); }
+    .panel-avatar-area { display:flex;flex-direction:column;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-lg);padding-bottom:var(--space-lg);border-bottom:1px solid var(--color-border); }
+    .panel-avatar { width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff; }
+    .panel-member-name { font-size:17px;font-weight:600;color:var(--color-text-primary); }
+    .panel-footer { padding:var(--space-md) var(--space-lg);border-top:1px solid var(--color-border);flex-shrink:0;display:flex;flex-direction:column;gap:var(--space-sm); }
+    .panel-divider { height:1px;background:var(--color-border);margin:2px 0; }
+
+    /* Form elements in panel */
+    .form-field { margin-bottom:var(--space-md); }
+    .form-label { font-size:11px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;display:block; }
+    .form-input { width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:14px;color:var(--color-text-primary);outline:none; }
+    .form-input:focus { border-color:var(--color-primary); }
+    .form-select { width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:14px;color:var(--color-text-primary);outline:none;background:var(--color-surface);cursor:pointer; }
+    .form-select:focus { border-color:var(--color-primary); }
+
+    .role-radios { display:flex;gap:var(--space-sm); }
+    .role-radio { flex:1;border:2px solid var(--color-border);border-radius:var(--radius-sm);padding:10px var(--space-sm);cursor:pointer;transition:border-color 0.15s,background 0.15s;text-align:center; }
+    .role-radio:hover { border-color:#A5B4FC; }
+    .role-radio--selected { border-color:var(--color-primary);background:#F5F6FE; }
+    .role-radio__label { font-size:13px;font-weight:500;color:var(--color-text-primary); }
+    .role-radio__desc { font-size:11px;color:var(--color-text-secondary);margin-top:2px; }
+
+    .status-toggle-row { display:flex;align-items:center;justify-content:space-between;padding:var(--space-sm) 0; }
+    .toggle { position:relative;display:inline-flex;align-items:center;cursor:pointer; }
+    .toggle__input { position:absolute;opacity:0;width:0;height:0; }
+    .toggle__track { width:38px;height:22px;background:#D1D5DB;border-radius:11px;transition:background 0.2s;position:relative; }
+    .toggle__thumb { position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2); }
+    .toggle__input:checked + .toggle__track { background:#10B981; }
+    .toggle__input:checked + .toggle__track .toggle__thumb { transform:translateX(16px); }
+
+    .btn-full { width:100%;padding:10px;border-radius:var(--radius-sm);font-size:14px;cursor:pointer;border:none;text-align:center; }
+    .btn-full--primary { background:var(--color-primary);color:#fff; }
+    .btn-full--primary:hover { background:var(--color-primary-hover); }
+    .btn-full--ghost { background:none;border:1px solid var(--color-border);color:var(--color-text-secondary); }
+    .btn-full--ghost:hover { background:var(--color-bg); }
+    .btn-full--danger { background:#FFF5F5;color:#DC2626;border:1px solid #FCA5A5; }
+    .btn-full--danger:hover { background:#FEE2E2; }
+    .btn-full--success { background:#F0FDF4;color:#065F46;border:1px solid #6EE7B7; }
+    .btn-full--success:hover { background:#D1FAE5; }
+
+    /* ── Add Modal ── */
+    .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;z-index:2000; }
+    .modal-overlay--open { display:flex; }
+    .modal-box { background:var(--color-surface);border-radius:var(--radius-lg);padding:var(--space-xl);width:440px;max-width:90vw;position:relative; }
+    .modal-title { font-size:16px;font-weight:600;color:var(--color-text-primary);margin-bottom:var(--space-lg); }
+    .modal-close { position:absolute;top:var(--space-md);right:var(--space-md);width:28px;height:28px;border:none;background:none;cursor:pointer;color:var(--color-text-secondary);display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm); }
+    .modal-close:hover { background:var(--color-bg); }
+    .modal-footer { display:flex;justify-content:flex-end;gap:var(--space-sm);margin-top:var(--space-lg); }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ════ Admin Sidebar ════ -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar__header">
+      <div class="admin-logo">W</div>
+      <span class="admin-sidebar__title">워크에이아이</span>
+      <span class="admin-badge">관리자</span>
+    </div>
+    <nav class="admin-nav">
+      <ul class="admin-nav__list">
+        <li><a href="info.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+          기본 정보
+        </a></li>
+        <li><a href="#" class="admin-nav__link" data-wip>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+          대시보드
+        </a></li>
+        <li><a href="usage.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          토큰 사용량
+        </a></li>
+        <li><a href="org.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          조직
+        </a></li>
+        <li><a href="members.html" class="admin-nav__link admin-nav__link--active">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          구성원
+        </a></li>
+        <li><a href="ai-settings.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          AI 설정
+        </a></li>
+        <li><a href="security.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          보안 설정
+        </a></li>
+        <li><a href="records.html" class="admin-nav__link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          기록
+        </a></li>
+      </ul>
+    </nav>
+    <div class="admin-sidebar__footer">
+      <a href="../index.html" class="admin-back-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        사용자 페이지로 이동
+      </a>
+    </div>
+  </aside>
+
+  <!-- ════ Admin Main ════ -->
+  <main class="admin-main">
+
+    <!-- Topbar -->
+    <div class="admin-topbar">
+      <span class="admin-topbar__title">구성원 관리</span>
+      <button class="btn-primary" onclick="openAddModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        구성원 추가
+      </button>
+    </div>
+
+    <div class="members-content">
+
+      <!-- Search Bar -->
+      <div class="search-bar">
+        <div class="search-row">
+          <div class="search-input-wrap">
+            <span class="search-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            </span>
+            <input type="text" class="search-input" id="searchInput"
+                   placeholder="이름, 이메일 검색..." oninput="applyFilters()">
+          </div>
+          <button class="btn-advanced" id="btnAdvanced" onclick="toggleAdvanced()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+            상세 검색
+            <span class="filter-badge" id="filterBadge" style="display:none">0</span>
+          </button>
+          <span class="member-count-txt" id="countTxt"></span>
+        </div>
+
+        <!-- Advanced filters -->
+        <div class="search-advanced" id="advancedPanel">
+          <div class="advanced-row">
+            <select class="filter-select" id="filterDept" onchange="applyFilters()">
+              <option value="">전체 부서</option>
+              <option>경영지원본부</option><option>인사팀</option><option>재무팀</option>
+              <option>개발본부</option><option>프론트엔드팀</option><option>백엔드팀</option>
+              <option>AI팀</option><option>사업본부</option><option>영업팀</option><option>마케팅팀</option>
+            </select>
+            <select class="filter-select" id="filterRole" onchange="applyFilters()">
+              <option value="">전체 역할</option>
+              <option value="admin">관리자</option>
+              <option value="user">일반 사용자</option>
+            </select>
+            <select class="filter-select" id="filterStatus" onchange="applyFilters()">
+              <option value="">전체 상태</option>
+              <option value="active">활성</option>
+              <option value="inactive">비활성</option>
+              <option value="pending">초대 대기중</option>
+            </select>
+            <button class="btn-reset" onclick="resetFilters()">초기화</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table class="members-table">
+          <thead>
+            <tr>
+              <th class="col-check"><input type="checkbox" class="row-check" id="checkAll" onchange="toggleAll(this)"></th>
+              <th class="col-name">이름</th>
+              <th class="col-email">이메일</th>
+              <th class="col-dept">부서</th>
+              <th class="col-role">역할</th>
+              <th class="col-status">상태</th>
+              <th class="col-login">마지막 접속</th>
+              <th class="col-action"></th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+        <div class="table-empty" id="tableEmpty" style="display:none">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" style="color:var(--color-text-disabled);margin-bottom:8px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <div>검색 결과가 없습니다</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ════ Row Kebab Dropdown ════ -->
+<div class="row-dropdown" id="rowDropdown"></div>
+
+<!-- ════ Bulk Action Bar ════ -->
+<div class="bulk-bar" id="bulkBar">
+  <span class="bulk-bar__count" id="bulkCount">0명 선택됨</span>
+  <div class="bulk-divider"></div>
+  <button class="bulk-btn bulk-btn--ghost" onclick="bulkRoleChange()">역할 변경</button>
+  <button class="bulk-btn bulk-btn--ghost" onclick="bulkDeactivate()">계정 비활성화</button>
+  <div class="bulk-divider"></div>
+  <button class="bulk-btn bulk-btn--danger" onclick="bulkDelete()">삭제</button>
+  <button class="bulk-close" onclick="clearSelection()">×</button>
+</div>
+
+<!-- ════ Slide Panel ════ -->
+<div class="slide-panel" id="slidePanel">
+  <div class="panel-header">
+    <span class="panel-title">구성원 상세</span>
+    <button class="panel-close" onclick="closePanel()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="panel-body" id="panelBody"></div>
+  <div class="panel-footer" id="panelFooter"></div>
+</div>
+
+<!-- ════ Add Member Modal ════ -->
+<div class="modal-overlay" id="modal-add">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modal-add')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-title">구성원 추가</div>
+    <div class="form-field">
+      <label class="form-label">이름 <span style="color:#DC2626">*</span></label>
+      <input type="text" class="form-input" id="add-name" placeholder="홍길동">
+    </div>
+    <div class="form-field">
+      <label class="form-label">이메일 <span style="color:#DC2626">*</span></label>
+      <input type="email" class="form-input" id="add-email" placeholder="example@workai.co">
+    </div>
+    <div class="form-field">
+      <label class="form-label">부서</label>
+      <select class="form-select" id="add-dept">
+        <option value="">부서 선택 (선택사항)</option>
+        <option>경영지원본부</option><option>인사팀</option><option>재무팀</option>
+        <option>개발본부</option><option>프론트엔드팀</option><option>백엔드팀</option>
+        <option>AI팀</option><option>사업본부</option><option>영업팀</option><option>마케팅팀</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label class="form-label">역할</label>
+      <div class="role-radios">
+        <div class="role-radio role-radio--selected" id="add-role-user" onclick="setAddRole('user')">
+          <div class="role-radio__label">일반 사용자</div>
+          <div class="role-radio__desc">채팅·에이전트 사용</div>
+        </div>
+        <div class="role-radio" id="add-role-admin" onclick="setAddRole('admin')">
+          <div class="role-radio__label">관리자</div>
+          <div class="role-radio__desc">관리 페이지 접근</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('modal-add')">취소</button>
+      <button class="btn-primary" onclick="submitAdd()">초대 발송</button>
+    </div>
+  </div>
+</div>
+
+<div id="appToast" class="toast"></div>
+<script src="../js/common.js"></script>
+<script>
+// ══════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════
+let MEMBERS = [
+  { id:'m1',  name:'홍길동', email:'hong@workai.co',     dept:'경영지원본부', role:'admin', status:'active',   color:'#5B6EF5', lastLogin:'방금 전'    },
+  { id:'m2',  name:'김지수', email:'kim.js@workai.co',   dept:'경영지원본부', role:'user',  status:'active',   color:'#10B981', lastLogin:'1시간 전'   },
+  { id:'m3',  name:'이민준', email:'lee.mj@workai.co',   dept:'경영지원본부', role:'user',  status:'active',   color:'#F59E0B', lastLogin:'어제'       },
+  { id:'m4',  name:'박서연', email:'park.sy@workai.co',  dept:'인사팀',       role:'user',  status:'active',   color:'#EC4899', lastLogin:'2시간 전'   },
+  { id:'m5',  name:'최현우', email:'choi.hw@workai.co',  dept:'인사팀',       role:'user',  status:'inactive', color:'#8B5CF6', lastLogin:'2025.03.10' },
+  { id:'m6',  name:'정다은', email:'jung.de@workai.co',  dept:'재무팀',       role:'user',  status:'active',   color:'#3B82F6', lastLogin:'오늘 09:14' },
+  { id:'m7',  name:'한승민', email:'han.sm@workai.co',   dept:'재무팀',       role:'user',  status:'active',   color:'#EF4444', lastLogin:'3일 전'     },
+  { id:'m8',  name:'오지훈', email:'oh.jh@workai.co',    dept:'개발본부',     role:'admin', status:'active',   color:'#14B8A6', lastLogin:'방금 전'    },
+  { id:'m9',  name:'윤채원', email:'yoon.cw@workai.co',  dept:'개발본부',     role:'user',  status:'active',   color:'#F97316', lastLogin:'30분 전'    },
+  { id:'m10', name:'임수빈', email:'lim.sb@workai.co',   dept:'프론트엔드팀', role:'user',  status:'active',   color:'#6366F1', lastLogin:'오늘 11:22' },
+  { id:'m11', name:'강태양', email:'kang.ty@workai.co',  dept:'프론트엔드팀', role:'user',  status:'active',   color:'#D97706', lastLogin:'어제'       },
+  { id:'m12', name:'신예진', email:'shin.yj@workai.co',  dept:'프론트엔드팀', role:'user',  status:'pending',  color:'#059669', lastLogin:'—'          },
+  { id:'m13', name:'백준혁', email:'baek.jh@workai.co',  dept:'백엔드팀',     role:'user',  status:'active',   color:'#7C3AED', lastLogin:'1일 전'     },
+  { id:'m14', name:'조민서', email:'jo.ms@workai.co',    dept:'백엔드팀',     role:'user',  status:'active',   color:'#DC2626', lastLogin:'오늘 10:05' },
+  { id:'m15', name:'유다현', email:'yu.dh@workai.co',    dept:'AI팀',         role:'user',  status:'pending',  color:'#0891B2', lastLogin:'—'          },
+  { id:'m16', name:'권성호', email:'kwon.sh@workai.co',  dept:'사업본부',     role:'user',  status:'active',   color:'#65A30D', lastLogin:'2025.04.20' },
+  { id:'m17', name:'황지민', email:'hwang.jm@workai.co', dept:'영업팀',       role:'user',  status:'active',   color:'#C026D3', lastLogin:'오늘 08:51' },
+  { id:'m18', name:'나예슬', email:'na.ys@workai.co',    dept:'마케팅팀',     role:'user',  status:'inactive', color:'#E11D48', lastLogin:'2025.03.25' },
+];
+
+const STATUS_LABEL = { active:'활성', inactive:'비활성', pending:'초대 대기중' };
+const ROLE_LABEL   = { admin:'관리자', user:'일반 사용자' };
+const DEPTS = ['경영지원본부','인사팀','재무팀','개발본부','프론트엔드팀','백엔드팀','AI팀','사업본부','영업팀','마케팅팀'];
+
+let selectedIds    = new Set();
+let currentPanelId = null;
+let addRoleValue   = 'user';
+let advancedOpen   = false;
+let activeDD       = null;
+
+// ══════════════════════════════════════════════
+//  TABLE RENDER & FILTER
+// ══════════════════════════════════════════════
+function applyFilters() {
+  const q      = document.getElementById('searchInput').value.trim().toLowerCase();
+  const dept   = document.getElementById('filterDept').value;
+  const role   = document.getElementById('filterRole').value;
+  const status = document.getElementById('filterStatus').value;
+
+  const list = MEMBERS.filter(m => {
+    if (q && !m.name.toLowerCase().includes(q) && !m.email.toLowerCase().includes(q)) return false;
+    if (dept   && m.dept  !== dept)   return false;
+    if (role   && m.role  !== role)   return false;
+    if (status && m.status !== status) return false;
+    return true;
+  });
+
+  const activeFilters = [dept, role, status].filter(Boolean).length;
+  const badge = document.getElementById('filterBadge');
+  badge.style.display = activeFilters ? 'inline-flex' : 'none';
+  badge.textContent   = activeFilters;
+  document.getElementById('btnAdvanced').className =
+    'btn-advanced' + ((advancedOpen || activeFilters) ? ' btn-advanced--active' : '');
+
+  document.getElementById('countTxt').textContent = `총 ${list.length}명`;
+
+  const empty = document.getElementById('tableEmpty');
+  if (!list.length) {
+    document.getElementById('tableBody').innerHTML = '';
+    empty.style.display = 'block'; return;
+  }
+  empty.style.display = 'none';
+
+  document.getElementById('tableBody').innerHTML = list.map(m => {
+    const sel = selectedIds.has(m.id);
+    return `
+    <tr id="row-${m.id}" class="${sel ? 'row--selected' : ''}" onclick="handleRowClick(event,'${m.id}')">
+      <td class="col-check" onclick="event.stopPropagation()">
+        <input type="checkbox" class="row-check" data-id="${m.id}" ${sel ? 'checked' : ''}
+               onchange="toggleSelect('${m.id}',this.checked)">
+      </td>
+      <td class="col-name">
+        <div class="member-cell">
+          <div class="m-avatar" style="background:${m.color}">${m.name[0]}</div>
+          <span class="m-name">${m.name}</span>
+        </div>
+      </td>
+      <td class="col-email" style="color:var(--color-text-secondary);font-size:13px">${m.email}</td>
+      <td class="col-dept" style="color:var(--color-text-secondary)">${m.dept}</td>
+      <td class="col-role">
+        <span class="role-badge role-badge--${m.role}">${ROLE_LABEL[m.role]}</span>
+      </td>
+      <td class="col-status">
+        <span class="status-badge status-badge--${m.status}">
+          <span class="status-dot status-dot--${m.status}"></span>${STATUS_LABEL[m.status]}
+        </span>
+      </td>
+      <td class="col-login"><span class="login-txt">${m.lastLogin}</span></td>
+      <td class="col-action" onclick="event.stopPropagation()">
+        <button class="kebab-btn" onclick="openRowMenu(event,'${m.id}')">···</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+//  ROW SELECTION
+// ══════════════════════════════════════════════
+function handleRowClick(e, id) { closeDD(); openPanel(id); }
+
+function toggleSelect(id, checked) {
+  checked ? selectedIds.add(id) : selectedIds.delete(id);
+  const row = document.getElementById('row-' + id);
+  if (row) row.className = checked ? 'row--selected' : '';
+  updateBulkBar(); updateCheckAll();
+}
+
+function toggleAll(el) {
+  document.querySelectorAll('#tableBody .row-check').forEach(cb => {
+    const id = cb.dataset.id;
+    cb.checked = el.checked;
+    el.checked ? selectedIds.add(id) : selectedIds.delete(id);
+    const row = document.getElementById('row-' + id);
+    if (row) row.className = el.checked ? 'row--selected' : '';
+  });
+  updateBulkBar();
+}
+
+function updateCheckAll() {
+  const boxes = document.querySelectorAll('#tableBody .row-check');
+  document.getElementById('checkAll').checked = boxes.length > 0 && [...boxes].every(c => c.checked);
+}
+
+function clearSelection() {
+  selectedIds.clear();
+  document.querySelectorAll('#tableBody .row-check').forEach(cb => {
+    cb.checked = false;
+    const row = document.getElementById('row-' + cb.dataset.id);
+    if (row) row.className = '';
+  });
+  document.getElementById('checkAll').checked = false;
+  updateBulkBar();
+}
+
+function updateBulkBar() {
+  const bar = document.getElementById('bulkBar');
+  bar.classList.toggle('bulk-bar--visible', selectedIds.size > 0);
+  document.getElementById('bulkCount').textContent = `${selectedIds.size}명 선택됨`;
+}
+
+// ══════════════════════════════════════════════
+//  BULK ACTIONS
+// ══════════════════════════════════════════════
+function bulkRoleChange() {
+  showToast(`${selectedIds.size}명의 역할이 변경되었습니다`);
+  clearSelection();
+}
+function bulkDeactivate() {
+  selectedIds.forEach(id => { const m = MEMBERS.find(x=>x.id===id); if(m && m.status!=='pending') m.status='inactive'; });
+  applyFilters(); clearSelection();
+  showToast('선택한 계정이 비활성화되었습니다');
+}
+function bulkDelete() {
+  const count = selectedIds.size;
+  if (selectedIds.has(currentPanelId)) closePanel();
+  MEMBERS = MEMBERS.filter(m => !selectedIds.has(m.id));
+  clearSelection(); applyFilters();
+  showToast(`구성원 ${count}명이 삭제되었습니다`);
+}
+
+// ══════════════════════════════════════════════
+//  ROW DROPDOWN
+// ══════════════════════════════════════════════
+function openRowMenu(e, id) {
+  closeDD();
+  const m    = MEMBERS.find(x => x.id === id);
+  const rect = e.currentTarget.getBoundingClientRect();
+  const dd   = document.getElementById('rowDropdown');
+
+  dd.style.cssText = `display:block;top:${rect.bottom + 4}px;right:${window.innerWidth - rect.right + 4}px`;
+
+  const statusActions = m.status === 'inactive'
+    ? `<div class="dd-item dd-item--success" onclick="closeDD();activateMember('${id}')">
+         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+         계정 활성화
+       </div>`
+    : `<div class="dd-item dd-item--danger" onclick="closeDD();deactivateMember('${id}')">
+         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+         계정 비활성화
+       </div>`;
+
+  const inviteBtn = m.status === 'pending'
+    ? `<div class="dd-item dd-item--warn" onclick="closeDD();resendInvite('${id}')">
+         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+         초대 재발송
+       </div>` : '';
+
+  dd.innerHTML = `
+    <div class="dd-item" onclick="closeDD();openPanel('${id}')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      상세 보기·편집
+    </div>
+    ${inviteBtn}
+    ${statusActions}
+    <div class="dd-divider"></div>
+    <div class="dd-item dd-item--danger" onclick="closeDD();deleteMember('${id}')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      삭제
+    </div>`;
+  activeDD = dd;
+}
+
+function closeDD() { if (activeDD) { activeDD.style.display = 'none'; activeDD = null; } }
+document.addEventListener('click', closeDD);
+
+// ── Row actions ──
+function deactivateMember(id) {
+  const m = MEMBERS.find(x=>x.id===id);
+  if (m) { m.status = 'inactive'; applyFilters(); if (currentPanelId===id) openPanel(id); showToast(`${m.name} 계정이 비활성화되었습니다`); }
+}
+function activateMember(id) {
+  const m = MEMBERS.find(x=>x.id===id);
+  if (m) { m.status = 'active'; applyFilters(); if (currentPanelId===id) openPanel(id); showToast(`${m.name} 계정이 활성화되었습니다`); }
+}
+function deleteMember(id) {
+  const m = MEMBERS.find(x=>x.id===id);
+  MEMBERS = MEMBERS.filter(x=>x.id!==id);
+  if (currentPanelId===id) closePanel();
+  selectedIds.delete(id); updateBulkBar(); applyFilters();
+  showToast(`${m.name} 구성원이 삭제되었습니다`);
+}
+function resendInvite(id) {
+  const m = MEMBERS.find(x=>x.id===id);
+  showToast(`${m.name}에게 초대 메일을 재발송했습니다`);
+}
+
+// ══════════════════════════════════════════════
+//  SLIDE PANEL
+// ══════════════════════════════════════════════
+function openPanel(id) {
+  currentPanelId = id;
+  const m = MEMBERS.find(x=>x.id===id);
+  if (!m) return;
+
+  const deptOptions = DEPTS.map(d => `<option ${d===m.dept?'selected':''}>${d}</option>`).join('');
+
+  document.getElementById('panelBody').innerHTML = `
+    <div class="panel-avatar-area">
+      <div class="panel-avatar" style="background:${m.color}">${m.name[0]}</div>
+      <div class="panel-member-name">${m.name}</div>
+      <span class="status-badge status-badge--${m.status}">
+        <span class="status-dot status-dot--${m.status}"></span>${STATUS_LABEL[m.status]}
+      </span>
+    </div>
+
+    <div class="form-field">
+      <label class="form-label">이름</label>
+      <input type="text" class="form-input" id="p-name" value="${m.name}">
+    </div>
+    <div class="form-field">
+      <label class="form-label">이메일</label>
+      <input type="email" class="form-input" id="p-email" value="${m.email}">
+    </div>
+    <div class="form-field">
+      <label class="form-label">부서</label>
+      <select class="form-select" id="p-dept">
+        <option value="">미배정</option>
+        ${deptOptions}
+      </select>
+    </div>
+    <div class="form-field">
+      <label class="form-label">역할</label>
+      <div class="role-radios">
+        <div class="role-radio${m.role==='user'?' role-radio--selected':''}" id="pr-user" onclick="setPanelRole('user')">
+          <div class="role-radio__label">일반 사용자</div>
+          <div class="role-radio__desc">채팅·에이전트 사용</div>
+        </div>
+        <div class="role-radio${m.role==='admin'?' role-radio--selected':''}" id="pr-admin" onclick="setPanelRole('admin')">
+          <div class="role-radio__label">관리자</div>
+          <div class="role-radio__desc">관리 페이지 접근</div>
+        </div>
+      </div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">계정 상태</label>
+      <div class="status-toggle-row">
+        <span style="font-size:14px;color:var(--color-text-primary)">활성화</span>
+        <label class="toggle">
+          <input type="checkbox" class="toggle__input" id="p-status" ${m.status==='active'?'checked':''}>
+          <div class="toggle__track"><div class="toggle__thumb"></div></div>
+        </label>
+      </div>
+    </div>`;
+
+  const isPending  = m.status === 'pending';
+  const isInactive = m.status === 'inactive';
+  document.getElementById('panelFooter').innerHTML = `
+    <button class="btn-full btn-full--primary" onclick="savePanel('${id}')">저장</button>
+    ${isPending ? `<button class="btn-full btn-full--ghost" onclick="resendInvite('${id}')">초대 재발송</button>` : ''}
+    <div class="panel-divider"></div>
+    ${isInactive
+      ? `<button class="btn-full btn-full--success" onclick="activateMember('${id}')">계정 활성화</button>`
+      : `<button class="btn-full btn-full--danger"  onclick="deactivateMember('${id}')">계정 비활성화</button>`}`;
+
+  document.getElementById('slidePanel').classList.add('slide-panel--open');
+}
+
+function setPanelRole(role) {
+  document.getElementById('pr-user').className  = 'role-radio' + (role==='user'  ? ' role-radio--selected' : '');
+  document.getElementById('pr-admin').className = 'role-radio' + (role==='admin' ? ' role-radio--selected' : '');
+}
+
+function savePanel(id) {
+  const m = MEMBERS.find(x=>x.id===id);
+  m.name  = document.getElementById('p-name').value.trim()  || m.name;
+  m.email = document.getElementById('p-email').value.trim() || m.email;
+  m.dept  = document.getElementById('p-dept').value || m.dept;
+  m.role  = document.getElementById('pr-admin').classList.contains('role-radio--selected') ? 'admin' : 'user';
+  if (m.status !== 'pending')
+    m.status = document.getElementById('p-status').checked ? 'active' : 'inactive';
+  applyFilters(); openPanel(id);
+  showToast('변경사항이 저장되었습니다');
+}
+
+function closePanel() {
+  document.getElementById('slidePanel').classList.remove('slide-panel--open');
+  currentPanelId = null;
+}
+
+// Close panel when clicking outside
+document.addEventListener('click', e => {
+  const panel = document.getElementById('slidePanel');
+  if (!panel.classList.contains('slide-panel--open')) return;
+  if (!panel.contains(e.target) && !e.target.closest('#tableBody') && !e.target.closest('.modal-overlay')) {
+    closePanel();
+  }
+});
+
+// ══════════════════════════════════════════════
+//  ADD MODAL
+// ══════════════════════════════════════════════
+function openAddModal() {
+  ['add-name','add-email'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('add-dept').value = '';
+  setAddRole('user');
+  openModal('modal-add');
+  setTimeout(() => document.getElementById('add-name').focus(), 80);
+}
+
+function setAddRole(role) {
+  addRoleValue = role;
+  document.getElementById('add-role-user').className  = 'role-radio' + (role==='user'  ? ' role-radio--selected' : '');
+  document.getElementById('add-role-admin').className = 'role-radio' + (role==='admin' ? ' role-radio--selected' : '');
+}
+
+function submitAdd() {
+  const name  = document.getElementById('add-name').value.trim();
+  const email = document.getElementById('add-email').value.trim();
+  if (!name || !email) { showToast('이름과 이메일을 입력해주세요'); return; }
+  const COLORS = ['#5B6EF5','#10B981','#F59E0B','#EC4899','#8B5CF6','#3B82F6','#EF4444','#14B8A6','#F97316'];
+  MEMBERS.unshift({
+    id: 'new-' + Date.now(), name, email,
+    dept: document.getElementById('add-dept').value || '미배정',
+    role: addRoleValue, status: 'pending',
+    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    lastLogin: '—'
+  });
+  closeModal('modal-add');
+  applyFilters();
+  showToast(`${name}에게 초대 메일을 발송했습니다`);
+}
+
+// ══════════════════════════════════════════════
+//  ADVANCED SEARCH
+// ══════════════════════════════════════════════
+function toggleAdvanced() {
+  advancedOpen = !advancedOpen;
+  document.getElementById('advancedPanel').className = 'search-advanced' + (advancedOpen ? ' search-advanced--open' : '');
+  applyFilters();
+}
+
+function resetFilters() {
+  document.getElementById('filterDept').value   = '';
+  document.getElementById('filterRole').value   = '';
+  document.getElementById('filterStatus').value = '';
+  applyFilters();
+}
+
+// ══════════════════════════════════════════════
+//  MODAL HELPERS
+// ══════════════════════════════════════════════
+function openModal(id)  { document.getElementById(id).classList.add('modal-overlay--open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('modal-overlay--open'); }
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay--open').forEach(el => el.classList.remove('modal-overlay--open'));
+    closePanel(); closeDD();
+  }
+});
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('modal-overlay--open'); });
+});
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+applyFilters();
+initWipLinks();
+</script>
+</body>
+</html>

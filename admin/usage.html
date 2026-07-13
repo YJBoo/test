@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280">
+  <title>WorkAI 관리자 — 토큰 사용량</title>
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    /* ── Admin Shell ── */
+    .admin-sidebar { width:var(--sidebar-width);min-width:var(--sidebar-width);background:var(--color-surface);border-right:1px solid var(--color-border);display:flex;flex-direction:column;height:100vh;flex-shrink:0; }
+    .admin-sidebar__header { padding:0 var(--space-md);height:56px;box-sizing:border-box;display:flex;align-items:center;gap:var(--space-sm);border-bottom:1px solid var(--color-border); }
+    .admin-logo { width:28px;height:28px;background:var(--color-primary);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0; }
+    .admin-sidebar__title { font-size:13.5px;font-weight:600;color:var(--color-text-primary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .admin-badge { font-size:10px;font-weight:600;background:#FEF3C7;color:#D97706;padding:2px 6px;border-radius:10px;flex-shrink:0; }
+    .admin-nav { flex:1;padding:var(--space-sm);overflow-y:auto; }
+    .admin-nav__list { list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:2px; }
+    .admin-nav__link { display:flex;align-items:center;gap:10px;padding:9px var(--space-sm);border-radius:var(--radius-sm);color:var(--color-text-secondary);text-decoration:none;font-size:13.5px;transition:background 0.15s,color 0.15s;cursor:pointer; }
+    .admin-nav__link:hover { background:var(--color-bg);color:var(--color-text-primary); }
+    .admin-nav__link--active { background:#EEF0FE;color:var(--color-primary);font-weight:500; }
+    .admin-sidebar__footer { padding:var(--space-sm) var(--space-md);border-top:1px solid var(--color-border); }
+    .admin-back-link { display:flex;align-items:center;gap:var(--space-sm);font-size:13px;color:var(--color-text-secondary);text-decoration:none;padding:8px var(--space-sm);border-radius:var(--radius-sm);transition:background 0.15s; }
+    .admin-back-link:hover { background:var(--color-bg);color:var(--color-text-primary); }
+    .admin-main { flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0; }
+    .admin-topbar { background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:0 var(--space-xl);display:flex;align-items:center;height:56px;flex-shrink:0;gap:var(--space-md); }
+    .admin-topbar__title { font-size:15px;font-weight:600;color:var(--color-text-primary);flex:1; }
+
+    /* ── Page Body ── */
+    .usage-body { flex:1;overflow-y:auto;padding:var(--space-xl); }
+    .usage-inner { max-width:1100px;margin:0 auto; }
+
+    /* ── Period Selector ── */
+    .period-bar { display:flex;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-lg); }
+    .period-group { display:flex;border:1px solid var(--color-border);border-radius:var(--radius-sm);overflow:hidden; }
+    .period-btn { padding:7px 16px;font-size:13px;font-weight:500;border:none;background:var(--color-surface);color:var(--color-text-secondary);cursor:pointer;transition:background 0.15s,color 0.15s;border-right:1px solid var(--color-border); }
+    .period-btn:last-child { border-right:none; }
+    .period-btn:hover { background:var(--color-bg); }
+    .period-btn--active { background:var(--color-primary);color:#fff; }
+    .period-custom { display:none;align-items:center;gap:var(--space-sm);padding-left:var(--space-sm); }
+    .period-custom.visible { display:flex; }
+    .period-input { padding:6px 10px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:13px;color:var(--color-text-primary);background:var(--color-surface); }
+    .period-sep { font-size:13px;color:var(--color-text-secondary); }
+    .period-apply { padding:6px 14px;background:var(--color-primary);color:#fff;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer; }
+    .export-btn { margin-left:auto;display:flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:13px;color:var(--color-text-secondary);background:var(--color-surface);cursor:pointer;transition:background 0.15s; }
+    .export-btn:hover { background:var(--color-bg);color:var(--color-text-primary); }
+
+    /* ── Summary Cards ── */
+    .summary-grid { display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-md);margin-bottom:var(--space-lg); }
+    .sum-card { background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-lg); }
+    .sum-card__label { font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:var(--space-xs); }
+    .sum-card__value { font-size:24px;font-weight:700;color:var(--color-text-primary);line-height:1.2; }
+    .sum-card__sub { font-size:12px;color:var(--color-text-secondary);margin-top:4px; }
+    .sum-card__delta { display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:500;margin-top:6px;padding:2px 7px;border-radius:8px; }
+    .sum-card__delta--up { background:#DCFCE7;color:#16A34A; }
+    .sum-card__delta--down { background:#FEE2E2;color:#DC2626; }
+    .sum-card__delta--neutral { background:var(--color-bg);color:var(--color-text-secondary); }
+
+    /* ── Tabs ── */
+    .usage-tabs { display:flex;border-bottom:2px solid var(--color-border);margin-bottom:var(--space-lg);gap:0; }
+    .usage-tab { padding:10px 20px;font-size:14px;font-weight:500;color:var(--color-text-secondary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color 0.15s,border-color 0.15s; }
+    .usage-tab:hover { color:var(--color-text-primary); }
+    .usage-tab--active { color:var(--color-primary);border-bottom-color:var(--color-primary);font-weight:600; }
+
+    /* ── Table ── */
+    .tbl-wrap { background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden; }
+    .tbl-toolbar { display:flex;align-items:center;padding:var(--space-md) var(--space-lg);border-bottom:1px solid var(--color-border);gap:var(--space-sm); }
+    .tbl-count { font-size:13px;color:var(--color-text-secondary); }
+    .tbl-count strong { color:var(--color-text-primary); }
+
+    table.usage-table { width:100%;border-collapse:collapse;font-size:13.5px; }
+    .usage-table th {
+      padding:10px var(--space-md);
+      text-align:right;
+      font-size:12px;font-weight:600;color:var(--color-text-secondary);
+      background:var(--color-bg);
+      border-bottom:1px solid var(--color-border);
+      white-space:nowrap;
+      user-select:none;
+    }
+    .usage-table th.col-left { text-align:left; }
+    .usage-table th.sortable { cursor:pointer; }
+    .usage-table th.sortable:hover { color:var(--color-text-primary); }
+    .usage-table th .sort-icon { display:inline-block;margin-left:4px;opacity:0.4;font-size:10px; }
+    .usage-table th.sort-asc .sort-icon::after { content:'▲'; }
+    .usage-table th.sort-desc .sort-icon::after { content:'▼'; }
+    .usage-table th:not(.sort-asc):not(.sort-desc) .sort-icon::after { content:'⇅'; }
+
+    .usage-table td { padding:12px var(--space-md);border-bottom:1px solid var(--color-border);color:var(--color-text-primary);text-align:right;vertical-align:middle; }
+    .usage-table td.col-left { text-align:left; }
+    .usage-table tbody tr:last-child td { border-bottom:none; }
+    .usage-table tbody tr:hover td { background:#FAFBFF; }
+
+    .rank-badge { display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:12px;font-weight:700; }
+    .rank-badge--1 { background:#FEF3C7;color:#D97706; }
+    .rank-badge--2 { background:#F1F5F9;color:#64748B; }
+    .rank-badge--3 { background:#FEF3C7;color:#B45309; }
+    .rank-badge--n { background:transparent;color:var(--color-text-secondary); }
+
+    .user-cell { display:flex;align-items:center;gap:var(--space-sm); }
+    .user-avatar { width:28px;height:28px;border-radius:50%;background:var(--color-primary);color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+    .user-name { font-weight:500;color:var(--color-text-primary); }
+    .user-dept { font-size:11px;color:var(--color-text-secondary);margin-top:1px; }
+
+    .bar-cell { display:flex;align-items:center;gap:var(--space-sm); }
+    .bar-wrap { flex:1;height:6px;background:#E4E7EC;border-radius:3px;overflow:hidden;min-width:60px; }
+    .bar-fill { height:100%;border-radius:3px;background:var(--color-primary);transition:width 0.3s; }
+    .bar-val { font-size:13px;color:var(--color-text-primary);white-space:nowrap;min-width:80px;text-align:right; }
+
+    .model-icon { display:inline-flex;align-items:center;gap:6px; }
+    .model-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+
+    .cost-cell { font-weight:600;color:var(--color-text-primary); }
+    .cost-sub { font-size:11px;font-weight:400;color:var(--color-text-secondary); }
+
+    .tab-panel { display:none; }
+    .tab-panel--active { display:block; }
+
+    /* ── Pagination ── */
+    .pager { display:flex;align-items:center;justify-content:center;gap:var(--space-xs);padding:var(--space-md);border-top:1px solid var(--color-border); }
+    .pg-btn { min-width:32px;height:32px;padding:0 var(--space-sm);border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:13px;background:var(--color-surface);color:var(--color-text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s; }
+    .pg-btn:hover { background:var(--color-bg); }
+    .pg-btn--active { background:var(--color-primary);color:#fff;border-color:var(--color-primary);font-weight:600; }
+    .pg-btn:disabled { opacity:0.4;cursor:default; }
+  </style>
+</head>
+<body style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--color-bg);display:flex;height:100vh;overflow:hidden;">
+
+<!-- Admin Sidebar -->
+<aside class="admin-sidebar">
+  <div class="admin-sidebar__header">
+    <div class="admin-logo">W</div>
+    <span class="admin-sidebar__title">WorkAI 관리자</span>
+    <span class="admin-badge">ADMIN</span>
+  </div>
+  <nav class="admin-nav">
+    <ul class="admin-nav__list">
+      <li><a href="info.html" class="admin-nav__link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        기본 정보
+      </a></li>
+      <li><a href="#" class="admin-nav__link" data-wip>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        대시보드
+      </a></li>
+      <li><a href="usage.html" class="admin-nav__link admin-nav__link--active">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        토큰 사용량
+      </a></li>
+      <li><a href="org.html" class="admin-nav__link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="6" height="4"/><rect x="9" y="3" width="6" height="4"/><rect x="16" y="7" width="6" height="4"/><line x1="5" y1="11" x2="5" y2="18"/><line x1="12" y1="7" x2="12" y2="18"/><line x1="19" y1="11" x2="19" y2="18"/><line x1="5" y1="18" x2="19" y2="18"/></svg>
+        조직
+      </a></li>
+      <li><a href="members.html" class="admin-nav__link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        구성원
+      </a></li>
+      <li><a href="ai-settings.html" class="admin-nav__link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        AI 설정
+      </a></li>
+      <li><a href="security.html" class="admin-nav__link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        보안 설정
+      </a></li>
+      <li><a href="records.html" class="admin-nav__link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        기록
+      </a></li>
+    </ul>
+  </nav>
+  <div class="admin-sidebar__footer">
+    <a href="../index.html" class="admin-back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      사용자 페이지로 이동
+    </a>
+  </div>
+</aside>
+
+<!-- Main -->
+<div class="admin-main">
+  <!-- Topbar -->
+  <div class="admin-topbar">
+    <span class="admin-topbar__title">토큰 사용량</span>
+  </div>
+
+  <!-- Body -->
+  <div class="usage-body">
+    <div class="usage-inner">
+
+      <!-- Period Selector -->
+      <div class="period-bar">
+        <div class="period-group">
+          <button class="period-btn period-btn--active" onclick="setPeriod(this,'month')">이번 달</button>
+          <button class="period-btn" onclick="setPeriod(this,'last')">지난 달</button>
+          <button class="period-btn" onclick="setPeriod(this,'3m')">최근 3개월</button>
+          <button class="period-btn" onclick="setPeriod(this,'custom')">기간 설정</button>
+        </div>
+        <div class="period-custom" id="customRange">
+          <input type="date" class="period-input" id="dateFrom" value="2025-04-01">
+          <span class="period-sep">—</span>
+          <input type="date" class="period-input" id="dateTo" value="2025-04-27">
+          <button class="period-apply" onclick="applyCustom()">적용</button>
+        </div>
+        <button class="export-btn" onclick="showToast('CSV 파일이 다운로드됩니다.')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          CSV 내보내기
+        </button>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="summary-grid" id="summaryGrid">
+        <!-- JS로 렌더 -->
+      </div>
+
+      <!-- Tabs -->
+      <div class="usage-tabs">
+        <div class="usage-tab usage-tab--active" onclick="switchTab('user')">사용자별</div>
+        <div class="usage-tab" onclick="switchTab('dept')">부서별</div>
+        <div class="usage-tab" onclick="switchTab('model')">모델별</div>
+      </div>
+
+      <!-- Tab: 사용자별 -->
+      <div class="tab-panel tab-panel--active" id="tab-user">
+        <div class="tbl-wrap">
+          <div class="tbl-toolbar">
+            <span class="tbl-count">총 <strong id="userCount">0</strong>명</span>
+          </div>
+          <table class="usage-table" id="userTable">
+            <thead>
+              <tr>
+                <th class="col-left" style="width:44px;">#</th>
+                <th class="col-left sortable sort-desc" onclick="sortTable('user','name')" data-key="name">이름 <span class="sort-icon"></span></th>
+                <th class="sortable" onclick="sortTable('user','inTokens')" data-key="inTokens">입력 토큰 <span class="sort-icon"></span></th>
+                <th class="sortable" onclick="sortTable('user','outTokens')" data-key="outTokens">출력 토큰 <span class="sort-icon"></span></th>
+                <th class="sortable sort-desc" onclick="sortTable('user','total')" data-key="total">합계 <span class="sort-icon"></span></th>
+                <th style="width:160px;">비율</th>
+                <th class="sortable" onclick="sortTable('user','cost')" data-key="cost">예상 비용 <span class="sort-icon"></span></th>
+                <th class="sortable" onclick="sortTable('user','chats')" data-key="chats">대화 수 <span class="sort-icon"></span></th>
+              </tr>
+            </thead>
+            <tbody id="userTbody"></tbody>
+          </table>
+          <div class="pager" id="userPager"></div>
+        </div>
+      </div>
+
+      <!-- Tab: 부서별 -->
+      <div class="tab-panel" id="tab-dept">
+        <div class="tbl-wrap">
+          <div class="tbl-toolbar">
+            <span class="tbl-count">총 <strong id="deptCount">0</strong>개 부서</span>
+          </div>
+          <table class="usage-table" id="deptTable">
+            <thead>
+              <tr>
+                <th class="col-left" style="width:44px;">#</th>
+                <th class="col-left sortable" onclick="sortTable('dept','name')" data-key="name">부서명 <span class="sort-icon"></span></th>
+                <th class="sortable" onclick="sortTable('dept','members')" data-key="members">구성원 수 <span class="sort-icon"></span></th>
+                <th class="sortable" onclick="sortTable('dept','inTokens')" data-key="inTokens">입력 토큰 <span class="sort-icon"></span></th>
+                <th class="sortable" onclick="sortTable('dept','outTokens')" data-key="outTokens">출력 토큰 <span class="sort-icon"></span></th>
+                <th class="sortable sort-desc" onclick="sortTable('dept','total')" data-key="total">합계 <span class="sort-icon"></span></th>
+                <th style="width:160px;">비율</th>
+                <th class="sortable" onclick="sortTable('dept','perMember')" data-key="perMember">인당 평균 <span class="sort-icon"></span></th>
+                <th class="sortable" onclick="sortTable('dept','cost')" data-key="cost">예상 비용 <span class="sort-icon"></span></th>
+              </tr>
+            </thead>
+            <tbody id="deptTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab: 모델별 -->
+      <div class="tab-panel" id="tab-model">
+        <div class="tbl-wrap">
+          <div class="tbl-toolbar">
+            <span class="tbl-count">사용 중인 모델 <strong id="modelCount">0</strong>개</span>
+          </div>
+          <table class="usage-table" id="modelTable">
+            <thead>
+              <tr>
+                <th class="col-left" style="width:44px;">#</th>
+                <th class="col-left sortable" onclick="sortTable('model','name')" data-key="name">모델 <span class="sort-icon"></span></th>
+                <th class="sortable" onclick="sortTable('model','calls')" data-key="calls">호출 수 <span class="sort-icon"></span></th>
+                <th class="sortable" onclick="sortTable('model','inTokens')" data-key="inTokens">입력 토큰 <span class="sort-icon"></span></th>
+                <th class="sortable" onclick="sortTable('model','outTokens')" data-key="outTokens">출력 토큰 <span class="sort-icon"></span></th>
+                <th class="sortable sort-desc" onclick="sortTable('model','total')" data-key="total">합계 <span class="sort-icon"></span></th>
+                <th style="width:160px;">비율</th>
+                <th class="sortable" onclick="sortTable('model','cost')" data-key="cost">예상 비용 <span class="sort-icon"></span></th>
+              </tr>
+            </thead>
+            <tbody id="modelTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────
+const USERS = [
+  { id:1, name:'홍길동', dept:'개발본부 › 백엔드팀', avatar:'홍', inTokens:1840200, outTokens:612400, chats:127, cost:38.2 },
+  { id:2, name:'김지수', dept:'개발본부 › 프론트엔드팀', avatar:'김', inTokens:1520100, outTokens:498700, chats:98, cost:31.4 },
+  { id:3, name:'이민준', dept:'경영지원본부 › 인사팀', avatar:'이', inTokens:1102300, outTokens:341500, chats:74, cost:22.8 },
+  { id:4, name:'박서연', dept:'사업본부 › 영업1팀', avatar:'박', inTokens:983600, outTokens:310200, chats:65, cost:20.1 },
+  { id:5, name:'최준혁', dept:'개발본부 › 데이터팀', avatar:'최', inTokens:876400, outTokens:290800, chats:61, cost:18.4 },
+  { id:6, name:'정예린', dept:'경영지원본부 › 기획팀', avatar:'정', inTokens:754200, outTokens:248300, chats:52, cost:15.7 },
+  { id:7, name:'강도현', dept:'사업본부 › 마케팅팀', avatar:'강', inTokens:698500, outTokens:231100, chats:47, cost:14.5 },
+  { id:8, name:'윤소희', dept:'경영지원본부 › 재무팀', avatar:'윤', inTokens:621300, outTokens:204700, chats:43, cost:13.0 },
+  { id:9, name:'임태양', dept:'개발본부 › 인프라팀', avatar:'임', inTokens:584900, outTokens:192800, chats:39, cost:12.2 },
+  { id:10, name:'한나연', dept:'사업본부 › 영업2팀', avatar:'한', inTokens:512700, outTokens:169400, chats:35, cost:10.6 },
+  { id:11, name:'오재원', dept:'개발본부 › 백엔드팀', avatar:'오', inTokens:473200, outTokens:155100, chats:31, cost:9.8 },
+  { id:12, name:'신지훈', dept:'경영지원본부 › 총무팀', avatar:'신', inTokens:398700, outTokens:131500, chats:26, cost:8.2 },
+  { id:13, name:'배수연', dept:'사업본부 › 파트너십팀', avatar:'배', inTokens:341200, outTokens:112300, chats:22, cost:7.1 },
+  { id:14, name:'류민서', dept:'개발본부 › QA팀', avatar:'류', inTokens:287400, outTokens:94100, chats:18, cost:6.0 },
+];
+
+const DEPTS = [
+  { id:'d1', name:'개발본부', members:8, inTokens:6384500, outTokens:2095900, cost:120.8 },
+  { id:'d2', name:'경영지원본부', members:5, inTokens:2876500, outTokens:936600, cost:60.0 },
+  { id:'d3', name:'사업본부', members:4, inTokens:2536000, outTokens:823000, cost:52.3 },
+  { id:'d4', name:'개발본부 › 백엔드팀', members:3, inTokens:2313400, outTokens:767500, cost:48.0 },
+  { id:'d5', name:'개발본부 › 프론트엔드팀', members:2, inTokens:1520100, outTokens:498700, cost:31.4 },
+  { id:'d6', name:'개발본부 › 데이터팀', members:1, inTokens:876400, outTokens:290800, cost:18.4 },
+  { id:'d7', name:'개발본부 › 인프라팀', members:1, inTokens:584900, outTokens:192800, cost:12.2 },
+  { id:'d8', name:'경영지원본부 › 인사팀', members:2, inTokens:1102300, outTokens:341500, cost:22.8 },
+  { id:'d9', name:'경영지원본부 › 기획팀', members:1, inTokens:754200, outTokens:248300, cost:15.7 },
+  { id:'d10', name:'사업본부 › 영업1팀', members:2, inTokens:983600, outTokens:310200, cost:20.1 },
+  { id:'d11', name:'사업본부 › 마케팅팀', members:1, inTokens:698500, outTokens:231100, cost:14.5 },
+];
+
+const MODELS = [
+  { id:'m1', name:'Claude Sonnet', tier:'Sonnet', color:'#5B6EF5', calls:3840, inTokens:7210000, outTokens:2381400, cost:148.7 },
+  { id:'m2', name:'Claude Haiku', tier:'Haiku', color:'#10B981', calls:2150, inTokens:3482000, outTokens:1148200, cost:60.4 },
+  { id:'m3', name:'Claude Opus', tier:'Opus', color:'#8B5CF6', calls:410, inTokens:1105000, outTokens:326200, cost:24.2 },
+];
+
+// ── State ──────────────────────────────────────────────
+let currentTab = 'user';
+let sortState = {
+  user:  { key:'total', asc:false },
+  dept:  { key:'total', asc:false },
+  model: { key:'total', asc:false },
+};
+const PAGE_SIZE = 10;
+let userPage = 1;
+
+// ── Helpers ──────────────────────────────────────────
+function fmtToken(n) {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
+  if (n >= 1_000) return Math.round(n / 1_000) + 'K';
+  return n.toLocaleString();
+}
+function fmtNum(n) { return n.toLocaleString(); }
+function fmtCost(n) { return '₩' + Math.round(n * 1380).toLocaleString(); }
+function fmtDollar(n) { return '$' + n.toFixed(2); }
+function initials(name) { return name.slice(0,1); }
+function avatarColor(i) {
+  const colors = ['#5B6EF5','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#0EA5E9','#14B8A6'];
+  return colors[i % colors.length];
+}
+
+// ── Summary ───────────────────────────────────────────
+function renderSummary() {
+  const totalIn  = USERS.reduce((s,u) => s + u.inTokens, 0);
+  const totalOut = USERS.reduce((s,u) => s + u.outTokens, 0);
+  const total    = totalIn + totalOut;
+  const totalCost = USERS.reduce((s,u) => s + u.cost, 0);
+  const topModel = MODELS[0];
+
+  const cards = [
+    { label:'총 사용 토큰', value: fmtToken(total), sub: `입력 ${fmtToken(totalIn)} · 출력 ${fmtToken(totalOut)}`, delta:'+12.4%', dir:'up', deltaSub:'전월 대비' },
+    { label:'예상 비용', value: fmtCost(totalCost), sub: fmtDollar(totalCost) + ' (환율 1,380원)', delta:'+8.7%', dir:'up', deltaSub:'전월 대비' },
+    { label:'활성 사용자', value: USERS.length + '명', sub: '전체 구성원 18명 중', delta: Math.round(USERS.length/18*100) + '% 참여', dir:'neutral', deltaSub:'' },
+    { label:'최다 사용 모델', value: topModel.name, sub: fmtToken(topModel.inTokens + topModel.outTokens) + ' 토큰', delta: Math.round((topModel.inTokens+topModel.outTokens)/total*100) + '% 점유', dir:'neutral', deltaSub:'' },
+  ];
+
+  document.getElementById('summaryGrid').innerHTML = cards.map(c => `
+    <div class="sum-card">
+      <div class="sum-card__label">${c.label}</div>
+      <div class="sum-card__value">${c.value}</div>
+      <div class="sum-card__sub">${c.sub}</div>
+      <div class="sum-card__delta sum-card__delta--${c.dir}">
+        ${c.dir === 'up' ? '▲' : c.dir === 'down' ? '▼' : ''}
+        ${c.delta}
+        ${c.deltaSub ? `<span style="font-weight:400;color:inherit;opacity:0.7">&nbsp;${c.deltaSub}</span>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── User Table ────────────────────────────────────────
+function renderUserTable() {
+  const { key, asc } = sortState.user;
+  const sorted = [...USERS].sort((a, b) => {
+    const av = key === 'total' ? a.inTokens + a.outTokens : a[key];
+    const bv = key === 'total' ? b.inTokens + b.outTokens : b[key];
+    return asc ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+  });
+
+  const maxTotal = sorted[0].inTokens + sorted[0].outTokens;
+  const totalAll = USERS.reduce((s,u) => s + u.inTokens + u.outTokens, 0);
+  const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
+  const page = sorted.slice((userPage-1)*PAGE_SIZE, userPage*PAGE_SIZE);
+
+  document.getElementById('userCount').textContent = sorted.length;
+
+  document.getElementById('userTbody').innerHTML = page.map((u, i) => {
+    const rank = (userPage-1)*PAGE_SIZE + i + 1;
+    const total = u.inTokens + u.outTokens;
+    const pct = Math.round(total / maxTotal * 100);
+    const sharePct = (total / totalAll * 100).toFixed(1);
+    const clsRank = rank <= 3 ? `rank-badge--${rank}` : 'rank-badge--n';
+    return `
+      <tr>
+        <td class="col-left"><span class="rank-badge ${clsRank}">${rank}</span></td>
+        <td class="col-left">
+          <div class="user-cell">
+            <div class="user-avatar" style="background:${avatarColor(rank-1)}">${u.avatar}</div>
+            <div>
+              <div class="user-name">${u.name}</div>
+              <div class="user-dept">${u.dept}</div>
+            </div>
+          </div>
+        </td>
+        <td>${fmtToken(u.inTokens)}</td>
+        <td>${fmtToken(u.outTokens)}</td>
+        <td><strong>${fmtToken(total)}</strong></td>
+        <td>
+          <div class="bar-cell">
+            <div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div>
+            <span style="font-size:12px;color:var(--color-text-secondary);white-space:nowrap">${sharePct}%</span>
+          </div>
+        </td>
+        <td class="cost-cell">${fmtCost(u.cost)}<div class="cost-sub">${fmtDollar(u.cost)}</div></td>
+        <td>${u.chats}회</td>
+      </tr>`;
+  }).join('');
+
+  // Pager
+  const pager = document.getElementById('userPager');
+  if (totalPages <= 1) { pager.innerHTML = ''; return; }
+  let html = `<button class="pg-btn" onclick="setUserPage(${userPage-1})" ${userPage===1?'disabled':''}>‹</button>`;
+  for (let p = 1; p <= totalPages; p++) {
+    html += `<button class="pg-btn ${p===userPage?'pg-btn--active':''}" onclick="setUserPage(${p})">${p}</button>`;
+  }
+  html += `<button class="pg-btn" onclick="setUserPage(${userPage+1})" ${userPage===totalPages?'disabled':''}>›</button>`;
+  pager.innerHTML = html;
+}
+function setUserPage(p) { userPage = p; renderUserTable(); }
+
+// ── Dept Table ────────────────────────────────────────
+function renderDeptTable() {
+  const { key, asc } = sortState.dept;
+  const data = DEPTS.map(d => ({
+    ...d,
+    total: d.inTokens + d.outTokens,
+    perMember: Math.round((d.inTokens + d.outTokens) / d.members),
+  }));
+  const sorted = [...data].sort((a, b) => {
+    const av = a[key]; const bv = b[key];
+    return asc ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+  });
+
+  const maxTotal = Math.max(...sorted.map(d => d.total));
+  const totalAll = sorted.reduce((s,d) => s + d.total, 0);
+  document.getElementById('deptCount').textContent = sorted.length;
+
+  document.getElementById('deptTbody').innerHTML = sorted.map((d, i) => {
+    const pct = Math.round(d.total / maxTotal * 100);
+    const sharePct = (d.total / totalAll * 100).toFixed(1);
+    return `
+      <tr>
+        <td class="col-left"><span class="rank-badge ${i<3?`rank-badge--${i+1}`:'rank-badge--n'}">${i+1}</span></td>
+        <td class="col-left"><strong>${d.name}</strong></td>
+        <td>${d.members}명</td>
+        <td>${fmtToken(d.inTokens)}</td>
+        <td>${fmtToken(d.outTokens)}</td>
+        <td><strong>${fmtToken(d.total)}</strong></td>
+        <td>
+          <div class="bar-cell">
+            <div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div>
+            <span style="font-size:12px;color:var(--color-text-secondary);white-space:nowrap">${sharePct}%</span>
+          </div>
+        </td>
+        <td>${fmtToken(d.perMember)}</td>
+        <td class="cost-cell">${fmtCost(d.cost)}<div class="cost-sub">${fmtDollar(d.cost)}</div></td>
+      </tr>`;
+  }).join('');
+}
+
+// ── Model Table ───────────────────────────────────────
+function renderModelTable() {
+  const { key, asc } = sortState.model;
+  const data = MODELS.map(m => ({ ...m, total: m.inTokens + m.outTokens }));
+  const sorted = [...data].sort((a, b) => {
+    const av = a[key]; const bv = b[key];
+    return asc ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+  });
+
+  const maxTotal = Math.max(...sorted.map(m => m.total));
+  const totalAll = sorted.reduce((s,m) => s + m.total, 0);
+  document.getElementById('modelCount').textContent = sorted.length;
+
+  document.getElementById('modelTbody').innerHTML = sorted.map((m, i) => {
+    const pct = Math.round(m.total / maxTotal * 100);
+    const sharePct = (m.total / totalAll * 100).toFixed(1);
+    return `
+      <tr>
+        <td class="col-left"><span class="rank-badge ${i<3?`rank-badge--${i+1}`:'rank-badge--n'}">${i+1}</span></td>
+        <td class="col-left">
+          <div class="model-icon">
+            <span class="model-dot" style="background:${m.color}"></span>
+            <div>
+              <div style="font-weight:600;color:var(--color-text-primary)">${m.name}</div>
+              <div style="font-size:11px;color:var(--color-text-secondary)">${m.tier} tier</div>
+            </div>
+          </div>
+        </td>
+        <td>${fmtNum(m.calls)}회</td>
+        <td>${fmtToken(m.inTokens)}</td>
+        <td>${fmtToken(m.outTokens)}</td>
+        <td><strong>${fmtToken(m.total)}</strong></td>
+        <td>
+          <div class="bar-cell">
+            <div class="bar-wrap"><div class="bar-fill" style="width:${pct}%;background:${m.color}"></div></div>
+            <span style="font-size:12px;color:var(--color-text-secondary);white-space:nowrap">${sharePct}%</span>
+          </div>
+        </td>
+        <td class="cost-cell">${fmtCost(m.cost)}<div class="cost-sub">${fmtDollar(m.cost)}</div></td>
+      </tr>`;
+  }).join('');
+}
+
+// ── Sort ──────────────────────────────────────────────
+function sortTable(tab, key) {
+  const s = sortState[tab];
+  if (s.key === key) { s.asc = !s.asc; }
+  else { s.key = key; s.asc = false; }
+
+  // Update header classes
+  const table = document.getElementById(tab + 'Table');
+  table.querySelectorAll('th[data-key]').forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (th.dataset.key === key) th.classList.add(s.asc ? 'sort-asc' : 'sort-desc');
+  });
+
+  if (tab === 'user') { userPage = 1; renderUserTable(); }
+  else if (tab === 'dept') renderDeptTable();
+  else renderModelTable();
+}
+
+// ── Tab Switch ────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.usage-tab').forEach(t => t.classList.remove('usage-tab--active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('tab-panel--active'));
+  event.currentTarget.classList.add('usage-tab--active');
+  document.getElementById('tab-' + tab).classList.add('tab-panel--active');
+}
+
+// ── Period ────────────────────────────────────────────
+function setPeriod(btn, type) {
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('period-btn--active'));
+  btn.classList.add('period-btn--active');
+  const custom = document.getElementById('customRange');
+  if (type === 'custom') { custom.classList.add('visible'); }
+  else { custom.classList.remove('visible'); showToast('기간이 변경되었습니다.'); }
+}
+function applyCustom() {
+  const from = document.getElementById('dateFrom').value;
+  const to   = document.getElementById('dateTo').value;
+  if (!from || !to || from > to) { showToast('올바른 기간을 선택해주세요.'); return; }
+  showToast(`${from} ~ ${to} 기간 데이터를 불러왔습니다.`);
+}
+
+// ── Toast ─────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1F2937;color:#fff;padding:10px 20px;border-radius:8px;font-size:13.5px;z-index:9999;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,0.2);transition:opacity 0.3s;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2000);
+}
+
+// ── Init ──────────────────────────────────────────────
+renderSummary();
+renderUserTable();
+renderDeptTable();
+renderModelTable();
+</script>
+</body>
+</html>
